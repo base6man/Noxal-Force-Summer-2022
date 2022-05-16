@@ -23,6 +23,9 @@ class MainCamera{
         this.freezY = true;
 
         this.pixelPosition = this.position.multiply(pixelSize);
+
+        this.name = 'mainCamera';
+        this.target = player;
     }
 
     update(){
@@ -30,7 +33,7 @@ class MainCamera{
         this.offset.magnitude = this.offsetMagnitude;
 
         let myPos = this.position;
-        let targetPos = player.position.add(this.offset);
+        let targetPos = this.target.position.add(this.offset);
 
         this.position = myPos.lerp(targetPos, this.speed * time.deltaTime);
         this.pixelPosition = this.position.multiply(pixelSize);
@@ -40,20 +43,20 @@ class MainCamera{
     }
 
     setOffset(){
-        if(player.direction == 'right'){
-            if(player.diagonal == true) { return new Vector(1, -1); }
+        if(this.target.direction == 'right'){
+            if(this.target.diagonal == true) { return new Vector(1, -1); }
             else{ return new Vector(1, 0); }
         }
-        else if(player.direction == 'up'){
-            if(player.diagonal == true) { return new Vector(1, 1); }
+        else if(this.target.direction == 'up'){
+            if(this.target.diagonal == true) { return new Vector(1, 1); }
             else{ return new Vector(0, 1); }
         }
-        else if(player.direction == 'left'){
-            if(player.diagonal == true) { return new Vector(-1, 1); }
+        else if(this.target.direction == 'left'){
+            if(this.target.diagonal == true) { return new Vector(-1, 1); }
             else{ return new Vector(-1, 0); }
         }
-        else if(player.direction == 'down'){
-            if(player.diagonal == true) { return new Vector(-1, -1); }
+        else if(this.target.direction == 'down'){
+            if(this.target.diagonal == true) { return new Vector(-1, -1); }
             else{ return new Vector(0, -1); }
         }
     }

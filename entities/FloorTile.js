@@ -19,6 +19,8 @@ class FloorTile{
         this.minY = minY;
         this.maxX = maxX;
         this.maxY = maxY;
+
+        this.name = 'floor';
     }
 
     update(){

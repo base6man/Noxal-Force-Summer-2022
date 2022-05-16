@@ -10,6 +10,7 @@ class Player extends PhysicsObject{
         super(x, y);
         this.collider = new BoxCollider(this, 0, 0, 5, 5);
         this.collider.layer = 'player';
+        this.name = 'player';
 
         this.speedMult = 70;
 

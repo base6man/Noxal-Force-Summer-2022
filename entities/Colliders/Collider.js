@@ -3,6 +3,7 @@ class Collider{
         this.parent = parent;
         this.index = colliders.length;
         colliders.push(this);
+        this.name = 'colliders';
     }
 
     delete(){

@@ -5,6 +5,7 @@ class Bullet extends PhysicsObject{
         super(startingPosition.x, startingPosition.y, startingVelocity.x, startingVelocity.y);
         this.acceleration = new Vector(0, 0);
         this.homing = 0;
+        this.target = player;
 
         this.image = image;
         this.image.name = 'bullet';
@@ -20,10 +21,11 @@ class Bullet extends PhysicsObject{
         this.timeHoming = Infinity;
         this.isFirstFrame = true;
 
-        this.index = bullets.length;
+        this.index = parseInt(bullets.length);
         bullets.push(this);
 
         this.startTime = time.runTime;
+        
     }
 
     update(){
@@ -37,7 +39,7 @@ class Bullet extends PhysicsObject{
         super.update();
         this.velocity = this.velocity.add(this.acceleration.multiply(time.deltaTime));
 
-        let vectorToPlayer = player.position.subtract(this.position);
+        let vectorToPlayer = this.target.position.subtract(this.position);
         this.velocity = this.velocity.add(vectorToPlayer.multiply(this.homing * time.deltaTime));
     }
 
@@ -59,8 +61,13 @@ class Bullet extends PhysicsObject{
         
         bullets.splice(this.index, 1);
         this.collider.delete();
+        time.stopFunctions(this, null);
         for(let i = this.index; i < bullets.length; i++){
-            bullets[i].moveDownOneIndex();
+          bullets[i].moveDownOneIndex();
+        }
+
+        for(let i in bullets){
+            console.assert(bullets[i].index == i);
         }
     }
 

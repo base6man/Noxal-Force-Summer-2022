@@ -7,6 +7,7 @@ class Boss extends PhysicsObject{
         super(x, y, 1, -1);
         this.collider = new BoxCollider(this, 0, 0, 5, 5);
         this.collider.layer = 'boss';
+        this.name = 'boss';
 
         this.dodgeSpeed = 30;
         this.dodgeTime = 0.06;
@@ -39,6 +40,7 @@ class Boss extends PhysicsObject{
 
         this.image = playerImages.idle[0];
 
+        this.target = player;
         this.isAttacking = true;
         this.comboCounter = 0;
 
@@ -46,7 +48,7 @@ class Boss extends PhysicsObject{
         // Cleared upon a new attack
         this.currentBullets = [];
 
-        time.delayedFunction(this, 'decideNextAttack', 1, ['none']);
+        time.delayedFunction(this.name, 'decideNextAttack', 1, ['none']);
 
         // First attack is the attack you combo from
         // Next attack is the attack you combo to
@@ -168,33 +170,33 @@ class Boss extends PhysicsObject{
                     if(combo.agression){ this.comboCounter += combo.agression; }
                     else{ this.comboCounter++ }
 
-                    if(combo.windup){ time.delayedFunction(this, combo.nextAttack, combo.windup); }
+                    if(combo.windup){ time.delayedFunction(this.name, combo.nextAttack, combo.windup); }
                     else{ this[combo.nextAttack](); }
                 }
             }
         }
 
         if(!startingAttack){
-            time.delayedFunction(this, 'decideNextAttack', this.comboCounter/2, ['idle']);
+            time.delayedFunction(this.name, 'decideNextAttack', this.comboCounter/2, ['idle']);
             this.isAttacking = false;
             this.comboCounter /= 2;
         }
     }
 
     get distanceToPlayer(){
-        return this.position.subtract(player.position).magnitude;
+        return this.position.subtract(this.target.position).magnitude;
     }
 
     get futureDistanceToPlayer(){
-        return this.position.subtract(player.position).add(player.velocity).magnitude;
+        return this.position.subtract(this.target.position).add(this.target.velocity).magnitude;
     }
 
     get vectorToPlayer(){
-        return player.position.subtract(this.position);
+        return this.target.position.subtract(this.position);
     }
 
     get futureVectorToPlayer(){
-        return player.position.subtract(this.position).add(player.velocity);
+        return this.target.position.subtract(this.position).add(this.target.velocity);
     }
 
     get angleToPlayer(){
@@ -208,7 +210,7 @@ class Boss extends PhysicsObject{
     }
 
     get futurePlayerPosition(){
-        return player.position.add(player.velocity);
+        return this.target.position.add(this.target.velocity);
     }
 
     get speed(){
@@ -236,7 +238,7 @@ class Boss extends PhysicsObject{
             myBullet.timeAlive = 0.2;
         }
 
-        time.delayedFunction(this, 'endDodge', this.dodgeTime, [leaveBullet]);
+        time.delayedFunction(this.name, 'endDodge', this.dodgeTime, [leaveBullet]);
     }
 
     endDodge(decideAttack = true){
@@ -297,9 +299,9 @@ class Boss extends PhysicsObject{
         let numShots = 4;
 
         for(let i = 0; i < numShots; i++){
-            time.delayedFunction(this, 'shootBullet', shootTime*i+delay, [angle + angleChange*i+angleInit, 200]);
+            time.delayedFunction(this.name, 'shootBullet', shootTime*i+delay, [angle + angleChange*i+angleInit, 200]);
         }
-        time.delayedFunction(this, 'finishRapid', shootTime*numShots + delay + this.dodgeTime);
+        time.delayedFunction(this.name, 'finishRapid', shootTime*numShots + delay + this.dodgeTime);
     }
 
     finishRapid(){
@@ -339,9 +341,9 @@ class Boss extends PhysicsObject{
         let numShots = 4;
 
         for(let i = 0; i < numShots; i++){
-            time.delayedFunction(this, 'shootBullet', shootTime*i+delay, [angleChange*i+angleInit, 0.001, 5]);
+            time.delayedFunction(this.name, 'shootBullet', shootTime*i+delay, [angleChange*i+angleInit, 0.001, 5]);
         }
-        time.delayedFunction(this, 'finishQuad', shootTime*numShots + delay);
+        time.delayedFunction(this.name, 'finishQuad', shootTime*numShots + delay);
     }
 
     finishQuad(){
@@ -353,7 +355,7 @@ class Boss extends PhysicsObject{
 
     laserCanExcecute(){
         return (
-            (this.position.magnitude > 120 || player.position.magnitude > 120) && 
+            (this.position.magnitude > 120 || this.target.position.magnitude > 120) && 
             this.comboCounter.between(2.5, 6.5) &&
             this.distanceToPlayer.between(90, 130)
         );
@@ -368,9 +370,9 @@ class Boss extends PhysicsObject{
         let numShots = Math.floor(laserDuration / shootTime);
 
         for(let i = 0; i < numShots; i++){
-            time.delayedFunction(this, 'laserShots', shootTime*i+delay);
+            time.delayedFunction(this.name, 'laserShots', shootTime*i+delay);
         }
-        time.delayedFunction(this, 'finishLaser', laserDuration);
+        time.delayedFunction(this.name, 'finishLaser', laserDuration);
     }
 
     laserShots(){
@@ -378,8 +380,8 @@ class Boss extends PhysicsObject{
         let bulletVelocity = new Vector(1, 0);
         bulletVelocity.angle = this.angleToPlayer;
         
-        let velocityVector = player.velocity.copy();
-        velocityVector.magnitude = 0.1 * player.velocity.magnitude / (player.runSpeed * player.speedMult);
+        let velocityVector = this.target.velocity.copy();
+        velocityVector.magnitude = 0.1 * this.target.velocity.magnitude / (this.target.runSpeed * this.target.speedMult);
         bulletVelocity = bulletVelocity.add(velocityVector);
 
         this.shootBullet(bulletVelocity.angle, 160);
@@ -392,7 +394,7 @@ class Boss extends PhysicsObject{
     strafeCanExcecute(){
         return (
             this.position.magnitude < 60 && 
-            player.position.magnitude < 60 &&
+            this.target.position.magnitude < 60 &&
             this.distanceToPlayer.between(50, 75) && 
             this.comboCounter < 4);
     }
@@ -409,9 +411,9 @@ class Boss extends PhysicsObject{
         let delay = 0.2;
 
         for(let i = 0; i < numShots; i++){
-            time.delayedFunction(this, 'shootBulletStrafe', shootTime*i+delay);
+            time.delayedFunction(this.name, 'shootBulletStrafe', shootTime*i+delay);
         }
-        time.delayedFunction(this, 'finishStrafe', shootTime*numShots + delay);
+        time.delayedFunction(this.name, 'finishStrafe', shootTime*numShots + delay);
     }
 
     shootBulletStrafe(){
@@ -433,12 +435,12 @@ class Boss extends PhysicsObject{
     }
 
     pistol(){
-        let velocityCurve = 0.8 * player.velocity.magnitude / (player.runSpeed * player.speedMult);
+        let velocityCurve = 0.8 * this.target.velocity.magnitude / (this.target.runSpeed * this.target.speedMult);
 
         let bulletVector = this.vectorToPlayer;
         bulletVector.magnitude = 1;
 
-        let playerVelocity = player.velocity.copy();
+        let playerVelocity = this.target.velocity.copy();
         playerVelocity.magnitude = velocityCurve;
 
         bulletVector = bulletVector.add(playerVelocity);
@@ -480,16 +482,16 @@ class Boss extends PhysicsObject{
             if(!this.invincible){
                 this.health -= 1;
                 this.invincible = true;
-                time.delayedFunction(this, 'endInvincibility', this.invincibilityTime);
+                time.delayedFunction(this.name, 'endInvincibility', this.invincibilityTime);
             }
 
-            let knockbackVector = this.position.subtract(player.position);
+            let knockbackVector = this.position.subtract(this.target.position);
             knockbackVector.magnitude = this.knockbackSpeed * this.speedMult;
 
             this.velocity = knockbackVector;
             
             this.knockedBack = true;
-            time.delayedFunction(this, 'endKnockback', this.knockbackTime);
+            time.delayedFunction(this.name, 'endKnockback', this.knockbackTime);
         }
     }
 }

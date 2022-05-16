@@ -21,7 +21,7 @@ class BoxCollider extends Collider{
         this.isTrigger = false;
         this.static = false;
         this.layer = 'default';
-        this.name = 'BoxCollider';
+        this.type = 'BoxCollider';
     }
 
     update(startIndex = 0){
@@ -35,7 +35,7 @@ class BoxCollider extends Collider{
                 // Here I handle trigger collisions
                 this.boxBoxTriggerCollision(this, colliders[j]);
             }
-            else if(colliders[j].name == 'BoxCollider' && colliders[j] != this){
+            else if(colliders[j].type == 'BoxCollider' && colliders[j] != this){
                 this.boxBoxCollision(this, colliders[j]);
             }
         }

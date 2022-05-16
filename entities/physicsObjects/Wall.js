@@ -8,6 +8,9 @@ class Wall extends PhysicsObject{
         this.collider.static = true;
 
         this.canvas = new Canvas(null, this.width, this.height);
+
+        this.index = walls.length;
+        walls.push(this);
     }
 
     updateImage(){

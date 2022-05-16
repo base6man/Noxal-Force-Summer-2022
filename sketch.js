@@ -1,4 +1,13 @@
-let player, mainCamera;
+let player; 
+let mainCamera;
+let boss;
+let bullets = [];
+let walls = [];
+let colliders = [];
+let floor;
+
+let bulletImage;
+let floorImages;
 let playerRunning, playerIdle, playerDiagonal;
 let playerImages = {}
 let pixelSize = 8;
@@ -9,15 +18,7 @@ let globalTimescale = 1;
 let steps = 10;
 let collisionSteps = 3;
 
-let boss;
-let bullets = [];
-let bulletImage;
 
-let floor;
-let floorImages;
-
-let walls = [];
-let colliders = [];
 let layerMap = [
   {a: 'default', b: 'default'},
   {a: 'player', b: 'enemyAttack'},
@@ -27,15 +28,16 @@ let layerMap = [
   {a: 'boss', b: 'player'}
 ]
 
+
 Number.prototype.between = function(a, b) {
   var min = Math.min.apply(Math, [a, b]);
   var max = Math.max.apply(Math, [a, b]);
   return this > min && this < max;
 };
 
-Array.prototype.includesKeyword = function(keyword) {
-  for(i in this){
-    if(keyword.test(this[i])) {return true; }
+function includesKeyword(array, keyword){
+  for(i in array){
+    if(keyword.test(array[i])) {return true; }
   }
   return false;
 }
@@ -87,31 +89,30 @@ function setup() {
   }
 
   createCanvas(windowWidth, windowHeight - 4);
-  mainCamera = new MainCamera(0, 0, width,height);
   
   time = new Time();
 
   player = new Player(-100, 0);
   boss = new Boss(100, 0);
+  
+  mainCamera = new MainCamera(0, 0, width,height);
   floor = new RandFloorTile(floorImage);
-  walls = [
-    new Wall(0, 180, 1000, 200),
-    new Wall(250, 0, 200, 1000),
-    new Wall(0, -180, 1000, 200),
-    new Wall(-250, 0, 200, 1000)
-  ]
 
+  new Wall(0, 180, 1000, 200);
+  new Wall(250, 0, 200, 1000);
+  new Wall(0, -180, 1000, 200);
+  new Wall(-250, 0, 200, 1000);
 }
 
 // Start draws all images
 // Do not move this to setup
 function start(){
-  for(let i in playerIdle){     playerIdle[i].setup();     }
-  for(let i in playerRunning){  playerRunning[i].setup();  }
-  for(let i in playerDiagonal){ playerDiagonal[i].setup(); }
-  for(let i in floorImage){     floorImage[i].setup();     }
-  for(let i in bulletImage){    bulletImage[i].setup();    }
-  for(let i in walls){          walls[i].canvas.setup();   }
+  for(let i in walls){ walls[i].canvas.setup();}
+  for(let i in floorImage){     floorImage[i].setup();           }
+  for(let i in bulletImage){    bulletImage[i].setup();          }
+  for(let i in playerIdle){     playerIdle[i].setup();           }
+  for(let i in playerRunning){  playerRunning[i].setup();        }
+  for(let i in playerDiagonal){ playerDiagonal[i].setup();       }
 }
 
 function draw() {
@@ -134,6 +135,8 @@ function draw() {
     }
   }
   
+  // Has to be in this order
+  // I hate it; I would make it in a different order, but that can't happen
   background(220);
   floor.updateImage();
   for(let i in walls){ walls[i].updateImage(); }
