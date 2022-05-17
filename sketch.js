@@ -28,6 +28,8 @@ let layerMap = [
   {a: 'boss', b: 'player'}
 ]
 
+let gameOver = false;
+
 
 Number.prototype.between = function(a, b) {
   var min = Math.min.apply(Math, [a, b]);
@@ -62,14 +64,13 @@ function preload() {
 
   floorImage = [
     loadImage("images/floorImages/floorTile1.png")
-    //loadImage("images/floorImages/floorTile2.png"),
-    //loadImage("images/floorImages/floorTile3.png"),
-    //loadImage("images/floorImages/floorTile4.png"),
-    //loadImage("images/floorImages/floorTile5.png")
   ]
 
   bulletImage = [
-    loadImage("images/bullet.png")
+    loadImage("images/bullet(0).png"),
+    loadImage("images/bullet(1).png"),
+    loadImage("images/bullet(3).png"),
+    loadImage("images/bullet(2).png")
   ]
 }
 
@@ -96,7 +97,7 @@ function setup() {
   boss = new Boss(100, 0);
   
   mainCamera = new MainCamera(0, 0, width,height);
-  floor = new RandFloorTile(floorImage);
+  floor = new RandFloorTile(floorImage, -150, -80, 150, 80);
 
   new Wall(0, 180, 1000, 200);
   new Wall(250, 0, 200, 1000);
@@ -116,36 +117,53 @@ function start(){
 }
 
 function draw() {
-  if(isFirstFrame){
-    start();
-    isFirstFrame = false;
-  }
-
-  for(let stepNum = 0; stepNum < steps; stepNum++){
-    time.update();
-    mainCamera.update();
-  
-    floor.update();
-    player.update();
-    boss.update();
-    for(let i in bullets){ bullets[i].update(); }
-  
-    for(let steps = 0; steps < collisionSteps; steps++){
-      for(let i in colliders){ colliders[i].update(parseInt(i)+1); }
+  if(gameOver){
+    let winlose;
+    if(player.health <= 0){
+      winlose = 'lose.';
     }
+    else if (boss.health <= 0){
+      winlose = 'win!';
+    }
+
+    textAlign(CENTER, CENTER);
+    textSize(80);
+    text('You ' + winlose, width/2, height/2);
+    console.log('You ' + winlose);
+    noLoop();
   }
+  else{
+    if(isFirstFrame){
+      start();
+      isFirstFrame = false;
+    }
   
-  // Has to be in this order
-  // I hate it; I would make it in a different order, but that can't happen
-  background(220);
-  floor.updateImage();
-  for(let i in walls){ walls[i].updateImage(); }
-  player.updateImage();
-  boss.updateImage();
-  for(let i in bullets){ bullets[i].updateImage(); }
+    for(let stepNum = 0; stepNum < steps; stepNum++){
+      time.update();
+      mainCamera.update();
+    
+      floor.update();
+      player.update();
+      boss.update();
+      for(let i in bullets){ bullets[i].update(); }
+    
+      for(let steps = 0; steps < collisionSteps; steps++){
+        for(let i in colliders){ colliders[i].update(parseInt(i)+1); }
+      }
+    }
+    
+    // Has to be in this order
+    // I hate it; I would make it in a different order, but that can't happen
+    background(220);
+    floor.updateImage();
+    for(let i in walls){ walls[i].updateImage(); }
+    player.updateImage();
+    boss.updateImage();
+    for(let i in bullets){ bullets[i].updateImage(); }
+  }
 }
 
-function drawImage(x, y, img){
+function drawImage(x, y, img, rotation = 'right', name = null){
 
   // Push and pop so other images aren't distorted by adjustments to this one
   {
@@ -171,11 +189,41 @@ function drawImage(x, y, img){
     x3 = x2 + width/2 * (1/scaleValue - 1)
     y3 = y2 + height/2 * (1/scaleValue - 1)
 
-    // Adjust to a pixel perfect camera
-    x4 = x3 - (x3 % pixelSize);
-    y4 = y3 - (y3 % pixelSize);
 
-    image(img, x4, y4);
+    // Adjust for image rotation
+    let x4, y4;
+    switch(rotation){
+    case 'down':
+      rotate(PI/2);
+      x4 = y3+pixelSize;
+      y4 = -x3 - (img.width+pixelSize);
+      break;
+    case 'left':
+      rotate(PI);
+      x4 = -x3 - (img.width+pixelSize);
+      y4 = -y3 - (img.height+pixelSize);
+      break;
+    case 'up':
+      rotate(3*PI/2);
+      x4 = -y3 - (img.height+pixelSize);
+      y4 = x3+pixelSize;
+      break;
+    case 'right':
+      x4 = x3+pixelSize;
+      y4 = y3+pixelSize;
+      break;
+    default:
+      console.log('Image rotation has reached an impossible state.');
+    }
+    
+    // Adjust to a pixel perfect camera
+    x5 = x4 - (x4 % pixelSize);
+    y5 = y4 - (y4 % pixelSize);
+
+    image(img, x5, y5);
+    if(name && rotation != 'right'){
+      console.log(name, x5, y5, mainCamera.position);
+    }
     pop();
   }
 }

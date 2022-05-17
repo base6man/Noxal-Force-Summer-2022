@@ -122,7 +122,7 @@ class Player extends PhysicsObject{
     attack(){
         if(KeyReader.j && this.canAttack){
             // Offset done later
-            this.attackObject = new Bullet(bulletImage[0], this.position);
+            this.attackObject = new Bullet(bulletImage[1], this.position);
             this.attackObject.melee = true;
 
             this.attackObject.collider.layer = 'playerAttack';
@@ -217,6 +217,9 @@ class Player extends PhysicsObject{
                 this.knockedBack = true;
                 time.delayedFunction(this, 'endInvincibility', this.invincibilityTime);
                 time.delayedFunction(this, 'endKnockback', this.knockbackTime);
+                if(this.health <= 0){
+                    gameOver = true;
+                }
             }
 
             let knockbackVector = this.position.subtract(other.position);

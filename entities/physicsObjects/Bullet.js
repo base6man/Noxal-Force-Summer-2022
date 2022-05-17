@@ -10,7 +10,7 @@ class Bullet extends PhysicsObject{
         this.image = image;
         this.image.name = 'bullet';
 
-        this.collider = new BoxCollider(this, 0, 0, 12, 12);
+        this.collider = new BoxCollider(this, 0, 0, this.image.width * 0.7, this.image.height * 0.7);
         this.collider.layer = 'enemyAttack';
         this.collider.isTrigger = true;
         // This should really be a circle collider, but I'll deal with that later.
@@ -25,12 +25,14 @@ class Bullet extends PhysicsObject{
         bullets.push(this);
 
         this.startTime = time.runTime;
+
+        this.dissapateDelay = null;
         
     }
 
     update(){
         if(this.isFirstFrame){
-            time.delayedFunction(this, 'dissapate', this.timeAlive);
+            this.dissapateDelay = time.delayedFunction(this, 'dissapate', this.timeAlive);
             if(this.homing != 0 && this.timeHoming < this.timeAlive){ 
                 time.delayedFunction(this, 'endHoming', this.timeHoming); 
             }
