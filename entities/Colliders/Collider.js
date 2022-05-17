@@ -16,4 +16,17 @@ class Collider{
     moveDownOneIndex(){
         this.index--;
     }
+    
+    canCollide(firstCollider, secondCollider){
+        for(let i in layerMap){
+            if(
+                (layerMap[i].a == firstCollider.layer && layerMap[i].b == secondCollider.layer) ||
+                (layerMap[i].b == firstCollider.layer && layerMap[i].a == secondCollider.layer)
+            ){
+                return true;
+            }
+        }
+
+        return false;
+    }
 }
