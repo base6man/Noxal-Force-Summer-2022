@@ -3,9 +3,9 @@ class Bullet extends PhysicsObject{
     constructor(image, startingPosition, startingVelocity = new Vector(0, 0)){
 
         super(startingPosition.x, startingPosition.y, startingVelocity.x, startingVelocity.y);
-        this.acceleration = new Vector(0, 0);
+        this.acceleration = 0;
         this.homing = 0;
-        this.target = player;
+        this.target = scene.player;
 
         this.image = image;
         this.image.name = 'bullet';
@@ -21,8 +21,8 @@ class Bullet extends PhysicsObject{
         this.timeHoming = Infinity;
         this.isFirstFrame = true;
 
-        this.index = parseInt(bullets.length);
-        bullets.push(this);
+        this.index = parseInt(scene.bullets.length);
+        scene.bullets.push(this);
 
         this.startTime = time.runTime;
         
@@ -36,11 +36,23 @@ class Bullet extends PhysicsObject{
             }
             this.isFirstFrame = false;
         }
+
         super.update();
         this.velocity = this.velocity.add(this.acceleration.multiply(time.deltaTime));
 
-        let vectorToPlayer = this.target.position.subtract(this.position);
-        this.velocity = this.velocity.add(vectorToPlayer.multiply(this.homing * time.deltaTime));
+        if(this.homing){
+            let vectorToPlayer = this.target.position.subtract(this.position);
+            this.velocity = this.velocity.add(vectorToPlayer.multiply(this.homing * time.deltaTime));
+        }
+    }
+
+    get acceleration(){
+        return this.myAcceleration;
+    }
+
+    set acceleration(_acceleration){
+        this.myAcceleration = this.velocity.copy();
+        this.myAcceleration.magnitude = _acceleration;
     }
 
     updateImage(){
@@ -54,22 +66,21 @@ class Bullet extends PhysicsObject{
     }
 
     endHoming(){
-        let homingVector = this.target.position.subtract(this.position).multiply(this.homing);
-        this.acceleration = this.acceleration.add(homingVector);
+        this.acceleration = this.homing;
         this.homing = 0;
     }
 
     dissapate(){
         
-        bullets.splice(this.index, 1);
+        scene.bullets.splice(this.index, 1);
         this.collider.delete();
         time.stopFunctions(this, null);
-        for(let i = this.index; i < bullets.length; i++){
-          bullets[i].moveDownOneIndex();
+        for(let i = this.index; i < scene.bullets.length; i++){
+          scene.bullets[i].moveDownOneIndex();
         }
 
-        for(let i in bullets){
-            console.assert(bullets[i].index == i);
+        for(let i in scene.bullets){
+            console.assert(scene.bullets[i].index == i);
         }
     }
 

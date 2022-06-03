@@ -12,6 +12,7 @@ class PhysicsObject{
     }
 
     update(){
-        this.position = this.position.add(this.velocity.multiply(time.deltaTime));
+        this.position.x += this.velocity.x * time.deltaTime;
+        this.position.y += this.velocity.y * time.deltaTime;
     }
 }

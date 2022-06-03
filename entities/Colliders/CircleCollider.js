@@ -20,15 +20,15 @@ class CircleCollider extends Collider{
         // That way I won't have to copy paste code for trigger collisions
         // If I ever make a more robust collider engine this will be in it.
 
-        for(let j = startIndex; j < colliders.length; j++){ 
-            if((this.isTrigger || colliders[j].isTrigger) && colliders[j] != this){
+        for(let j = startIndex; j < scene.colliders.length; j++){ 
+            if((this.isTrigger || scene.colliders[j].isTrigger) && scene.colliders[j] != this){
                 // Here I handle trigger collisions
-                if(colliders[j].type == 'CircleCollider'){
-                    this.circleBoxTriggerCollision(this, colliders[j]);
+                if(scene.colliders[j].type == 'CircleCollider'){
+                    this.circleBoxTriggerCollision(this, scene.colliders[j]);
                 }
             }
-            else if(colliders[j].type == 'BoxCollider' && colliders[j] != this){
-                this.circleBoxCollision(this, colliders[j]);
+            else if(scene.colliders[j].type == 'BoxCollider' && scene.colliders[j] != this){
+                this.circleBoxCollision(this, scene.colliders[j]);
             }
         }
     }

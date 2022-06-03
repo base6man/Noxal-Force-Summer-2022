@@ -26,19 +26,19 @@ class BoxCollider extends Collider{
 
     update(startIndex = 0){
 
-        for(let j = startIndex; j < colliders.length; j++){ 
-            if((this.isTrigger || colliders[j].isTrigger) && colliders[j] != this){
+        for(let j = startIndex; j < scene.colliders.length; j++){ 
+            if((this.isTrigger || scene.colliders[j].isTrigger) && scene.colliders[j] != this){
                 // Here I handle trigger collisions
-                if(colliders[j].type == 'BoxCollider'){
-                    this.boxBoxTriggerCollision(this, colliders[j]);
+                if(scene.colliders[j].type == 'BoxCollider'){
+                    this.boxBoxTriggerCollision(this, scene.colliders[j]);
                 }
-                else if (colliders[j].type == 'CircleCollider'){
-                    this.boxCircleTriggerCollision(this, colliders[j]);
+                else if (scene.colliders[j].type == 'CircleCollider'){
+                    this.boxCircleTriggerCollision(this, scene.colliders[j]);
                 }
             }
             // Non trigger collisions
-            else if(colliders[j].type == 'BoxCollider' && colliders[j] != this){
-                this.boxBoxCollision(this, colliders[j]);
+            else if(scene.colliders[j].type == 'BoxCollider' && scene.colliders[j] != this){
+                this.boxBoxCollision(this, scene.colliders[j]);
             }
         }
     }

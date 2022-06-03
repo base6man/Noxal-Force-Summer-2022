@@ -1,15 +1,15 @@
 class Collider{
     constructor(parent){
         this.parent = parent;
-        this.index = colliders.length;
-        colliders.push(this);
+        this.index = scene.colliders.length;
+        scene.colliders.push(this);
         this.name = 'colliders';
     }
 
     delete(){
-        colliders.splice(this.index, 1);
-        for(let i = this.index; i < colliders.length; i++){
-            colliders[i].moveDownOneIndex();
+        scene.colliders.splice(this.index, 1);
+        for(let i = this.index; i < scene.colliders.length; i++){
+            scene.colliders[i].moveDownOneIndex();
         }
     }
 

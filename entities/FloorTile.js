@@ -31,10 +31,10 @@ class FloorTile{
         let pixelWidth = this.width * pixelSize;
         let pixelHeight = this.height * pixelSize;
 
-        let startX = Math.max(mainCamera.leftEdge,   this.minX);
-        let startY = Math.max(mainCamera.bottomEdge, this.minY);
-        let endX =   Math.min(mainCamera.rightEdge,  this.maxX);
-        let endY =   Math.min(mainCamera.topEdge,    this.maxY);
+        let startX = Math.max(scene.mainCamera.leftEdge,   this.minX);
+        let startY = Math.max(scene.mainCamera.bottomEdge, this.minY);
+        let endX =   Math.min(scene.mainCamera.rightEdge,  this.maxX);
+        let endY =   Math.min(scene.mainCamera.topEdge,    this.maxY);
 
         startX -= startX % pixelWidth;
         startY -= startY % pixelHeight;

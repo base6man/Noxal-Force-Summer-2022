@@ -24,8 +24,8 @@ class Player extends PhysicsObject{
 
         this.canAttack = true;
         this.attackDuration = 0.15;
-        this.attackCooldownTime = 0.5;
         this.attackObject;
+        this.attackCooldownTime = 0.25;
 
         this.friction = 10;
         this.speed = this.runSpeed;
@@ -38,6 +38,9 @@ class Player extends PhysicsObject{
         this.knockbackTime = 0;
         this.knockedback = false;
 
+        this.teleporting = false;
+        this.ghost;
+
         this.createAnimations();
     }
 
@@ -48,7 +51,7 @@ class Player extends PhysicsObject{
             name: 'idle',
             animation: new Animator('idle', playerImages.idle, 0.8),
             get canRun(){
-                return player.velocity.sqrMagnitude < 1;
+                return scene.player.velocity.sqrMagnitude < 1;
             }
         }
         listOfAnimations.push(idleAnimation);
@@ -57,7 +60,7 @@ class Player extends PhysicsObject{
             name: 'running',
             animation: new Animator('running', playerImages.running, 0.3),
             get canRun(){
-                return player.velocity.sqrMagnitude > 1 && !player.diagonal;
+                return scene.player.velocity.sqrMagnitude > 1 && !scene.player.diagonal;
             }
         }
         listOfAnimations.push(runningAnimation);
@@ -66,7 +69,7 @@ class Player extends PhysicsObject{
             name: 'diagonal',
             animation: new Animator('diagonal', playerImages.diagonal, 0.3),
             get canRun(){
-                return player.velocity.sqrMagnitude > 1 && player.diagonal;
+                return scene.player.velocity.sqrMagnitude > 1 && scene.player.diagonal;
             }
         }
         listOfAnimations.push(diagonalAnimation);
@@ -81,8 +84,11 @@ class Player extends PhysicsObject{
         this.diagonal = this.findDirection().diagonal;
 
         this.dash();
-        this.attack();
+        this.teleport();
+        this.update_attack();
+
         super.update();
+        if(this.ghost) this.ghost.update();
         
         this.animationManager.update();
     }
@@ -92,6 +98,7 @@ class Player extends PhysicsObject{
             this.speed = this.dashSpeed;
             this.velocity.magnitude = this.dashSpeed * this.speedMult;
             this.canDash = false;
+            time.delayedFunction(this, 'attack', this.dashTime-0.1);
             time.delayedFunction(this, 'stopDash', this.dashTime);
             time.delayedFunction(this, 'dashCooldown', this.dashCooldownTime);
         }
@@ -120,19 +127,22 @@ class Player extends PhysicsObject{
     }
 
     attack(){
-        if(KeyReader.j && this.canAttack){
+        if(this.canAttack){
+
             // Offset done later
             this.attackObject = new Bullet(bulletImage[1], this.position);
             this.attackObject.melee = true;
-
+        
             this.attackObject.collider.layer = 'playerAttack';
             this.attackObject.collider.isTrigger = true;
-
+        
             this.canAttack = false;
             time.delayedFunction(this, 'endAttack', this.attackDuration);
             time.delayedFunction(this, 'attackCooldown', this.attackCooldownTime);
         }
+    }
 
+    update_attack(){
         if(this.attackObject){
             this.offset = this.velocity.copy();
             this.offset.magnitude = 7;
@@ -150,6 +160,7 @@ class Player extends PhysicsObject{
     }
 
     updateImage(){
+        if(this.ghost) this.ghost.updateImage();
         this.animationManager.draw(this.position.x, this.position.y, this.direction);
     }
 
@@ -199,6 +210,25 @@ class Player extends PhysicsObject{
 
     }
 
+    teleport(){
+        if(!this.teleporting && this.ghostKeysPressed()){
+            this.teleporting = true;
+            this.ghost = new Ghost(this.position, this.velocity);
+        }
+        else if (this.teleporting && !this.ghostKeysPressed()){
+            this.teleporting = false;
+            this.position = this.ghost.position;
+            this.velocity = this.ghost.velocity;
+            this.ghost.delete();
+            this.ghost = null;
+            this.attack();
+        }
+    }
+
+    ghostKeysPressed(){
+        return KeyReader.j  || KeyReader.k || KeyReader.l || KeyReader.i;
+    }
+
     endInvincibility(){
         this.invincible = false;
     }
@@ -218,7 +248,7 @@ class Player extends PhysicsObject{
                 time.delayedFunction(this, 'endInvincibility', this.invincibilityTime);
                 time.delayedFunction(this, 'endKnockback', this.knockbackTime);
                 if(this.health <= 0){
-                    gameOver = true;
+                    scene.gameOver = true;
                 }
             }
 
