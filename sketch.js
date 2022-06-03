@@ -177,7 +177,10 @@ function drawImage(x, y, img, rotation = 'right', name = null){
     y3 = y2 + height/2 * (1/scaleValue - 1);
 
     // After this we get some weird rotation stuff
-    if(scene.mainCamera.isOffScreen(img, x3, y3)) return;
+    if(scene.mainCamera.isOffScreen(img, x3, y3)) {
+      pop();
+      return;
+    }
 
     // Adjust for image rotation
     let x4, y4;
