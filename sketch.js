@@ -210,12 +210,17 @@ function drawImage(x, y, img, rotation = 'right', name = null){
     y5 = y4 - (y4 % pixelSize);
     
     let startTime = new Date();
-    image(img, x5, y5);
+    drawImageForRealThisTime(img, x5, y5);
     let endTime = new Date();
     imageTime += endTime - startTime;
 
     pop();
   }
+}
+
+// For debug purposes, so I know that drawImage isn't taking any time
+function drawImageForRealThisTime(img, x5, y5){
+  image(img, x5, y5);
 }
 
 // Old sketch code
