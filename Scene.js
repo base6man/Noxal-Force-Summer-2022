@@ -2,7 +2,7 @@ class Scene{
     constructor(){
         this.player; 
         this.mainCamera;
-        this.boss;
+        this.bossManager;
         this.bullets = [];
         this.walls = [];
         this.colliders = [];
@@ -13,6 +13,7 @@ class Scene{
         this.frameRateList = [];
 
         this.textBoxHeight = 20;
+        this.quote = '';
         
         this.gameOver = false;
     }
@@ -20,9 +21,8 @@ class Scene{
     // Setup initializes variables that require operations
     setup() {
         
-        this.player = new Player(0, 0);
-        this.boss = new Boss(100, 0, 1, 0.6);
-        this.boss.setAttacks(['dodge']);
+        this.player = new Player(0, -250);
+        this.bossManager = new BossManager();
         
         this.mainCamera = new MainCamera(0, -this.textBoxHeight/2, width, height - this.textBoxHeight*pixelSize);
         this.floor = new RandFloorTile(floorImage);
@@ -32,10 +32,10 @@ class Scene{
         //new Wall(0, -180, 500, 200);
         //new Wall(-250, 0, 200, 560);
 
-        new Wall(new Vector(-1000, 80),    new Vector(-10, 1000));
-        new Wall(new Vector(1000, 80),    new Vector(10, 1000));
+        new Wall(new Vector(-1000, -80),    new Vector(-20, -1000));
+        new Wall(new Vector(1000, -80),    new Vector(20, -1000));
         new Wall(new Vector(150, -1000),   new Vector(1000, 1000));
-        new Wall(new Vector(-1000, -1000), new Vector(1000, -80));
+        new Wall(new Vector(-1000, 1000), new Vector(1000, 80));
         new Wall(new Vector(-1000, -1000), new Vector(-150, 1000));
     }
 
@@ -44,43 +44,28 @@ class Scene{
     }
 
     update() {
-        if(this.gameOver){
-            let winlose;
-            if(this.player.health <= 0){
-                winlose = 'lose.';
-            }
-            else if (this.boss.health <= 0){
-                winlose = 'win!';
-            }
         
-            textAlign(CENTER, CENTER);
-            textSize(80);
-            text('You ' + winlose, width/2, height/2);
-            noLoop();   // Should be replaced with a thing that makes it stop running
+        if(this.isFirstFrame){
+            this.start();
+            this.isFirstFrame = false;
         }
-        else{
-            if(this.isFirstFrame){
-                this.start();
-                this.isFirstFrame = false;
-            }
-        
-            let start = new Date();
-            for(let stepNum = 0; stepNum < steps; stepNum++){
-                time.update();
-                this.mainCamera.update();
-                
-                this.floor.update();
-                this.player.update();
-                this.boss.update();
-                for(let i in this.bullets){ this.bullets[i].update(); }
+    
+        let start = new Date();
+        for(let stepNum = 0; stepNum < steps; stepNum++){
+            time.update();
+            this.mainCamera.update();
             
-                for(let stepNum = 0; stepNum < collisionSteps; stepNum++){
-                    for(let i in this.colliders){ this.colliders[i].update(parseInt(i)+1); }
-                }
+            this.floor.update();
+            this.player.update();
+            this.bossManager.update();
+            for(let i in this.bullets){ this.bullets[i].update(); }
+        
+            for(let stepNum = 0; stepNum < collisionSteps; stepNum++){
+                for(let i in this.colliders){ this.colliders[i].update(parseInt(i)+1); }
             }
-            let end = new Date();
-            //console.log('Time in update: ' + (end-start));
         }
+        let end = new Date();
+        //console.log('Time in update: ' + (end-start));
     }
 
     updateImage(){
@@ -89,19 +74,10 @@ class Scene{
         // I hate it; I would make it in a different order, but that can't happen
 
         this.floor.updateImage();
-        let floorTime = new Date() - start;
-
         for(let i in this.walls){ this.walls[i].updateImage(); }
-        let wallTime = new Date() - floorTime - start;
-
         this.player.updateImage();
-        let playerTime = new Date() - wallTime - start;
-
-        this.boss.updateImage();
-        let bossTime = new Date() - playerTime - start;
-
+        this.bossManager.updateImage();
         for(let i in this.bullets){ this.bullets[i].updateImage(); }
-        let bulletTime = new Date() - bossTime - start;
 
         let end = new Date();
         //console.log('Total: ' + (end-start), 'Floor: ' + floorTime, 'Wall: ' + wallTime, 'Player: ' + playerTime, 'Boss: ' + bossTime, 'Bullets: ' + bulletTime);
@@ -136,10 +112,25 @@ class Scene{
             strokeWeight(3);
             textAlign(LEFT, CENTER);
             textSize((this.textBoxHeight - 4)*pixelSize);
-            text(this.boss.quote, pixelSize*4, height - this.textBoxHeight/2*pixelSize);
+            text(this.quote, pixelSize*4, height - this.textBoxHeight/2*pixelSize);
         }
         pop();
         let end = new Date();
         //console.log('Time in update extras: ' + (end-start));
+    }
+
+    checkForGameOver(){
+        if(this.gameOver){
+            let winlose = new Transition([]);
+            if(this.player.health <= 0){
+                winlose.addQuote('You lose.');
+            }
+            else{
+                winlose.addQuote('You win!');
+                winlose.addQuote('Increasing difficulty...');
+                difficulty++;
+            }
+            killScene(winlose);
+        }
     }
 }

@@ -1,13 +1,16 @@
 class Boss extends PhysicsObject{
     /**
-     * @param {Number} x Starting x position
-     * @param {Number} y Starting y position
+     * @param {Vector} arenaCenter Starting position, also center of arena. Can change starting position later by editing position
+     * @param {Vector} arenaSize Size of the arena, in a vector
      */
-    constructor(x, y, agressiveness = 1, speed = 1, moveWhileShooting = 0){
-        super(x, y, 1, -1);
+    constructor(arenaCenter, arenaSize, difficulty){
+        // Starts at the velocity (1, -1). May need to make this more versatile
+        super(arenaCenter.x, arenaCenter.y, 1, -1);
         this.collider = new BoxCollider(this, 0, 0, 5, 5);
         this.collider.layer = 'boss';
         this.name = 'boss';
+
+        this.difficulty = difficulty;
 
         this.runSpeed = 9;
         this.normalMinDistance = 50;
@@ -15,16 +18,21 @@ class Boss extends PhysicsObject{
         this.minDistance = this.normalMinDistance;
         this.maxDistance = this.normalMaxDistance;
 
-        this.shootSpeed = this.runSpeed * moveWhileShooting;
+        this.shootSpeed = this.runSpeed * (this.difficulty-1)/5;
         this.strafeSpeed = 12;
 
-        this.speedMult = 8 * speed;
+        this.localspeedMult = 1 + (this.difficulty-1)/4;
+        this.speedMult = 8 * this.localspeedMult;
         this.speed = this.runSpeed;
         this.normalFriction = 2;
         this.friction = this.normalFriction;
         this.clockwise = true;
         
-        this.dodgeDist = 70;
+        this.dodgePower = 1 + (this.difficulty-1)/2;
+        this.distanceToDodge = 50 * (this.dodgePower + 2)/3;
+        //this.distanceFromGhostToDodge = 10 * (dodgePower + 2)/3;
+
+        this.dodgeDist = 70 * (this.dodgePower + 4)/5;
         this.dodgeTime = 0.2;
         this.dodgeSpeed = this.dodgeDist / this.dodgeTime / this.speedMult;
         this.dodging = false;
@@ -37,10 +45,10 @@ class Boss extends PhysicsObject{
         this.knockbackTime = 0.2;
         this.knockedback = false;
 
-        this.arenaRight = 150;
-        this.arenaTop = 80;
-        this.arenaLeft = -150;
-        this.arenaBottom = -80;
+        this.arenaRight = arenaCenter.x + arenaSize.x/2;
+        this.arenaTop = arenaCenter.y + arenaSize.y/2;
+        this.arenaLeft = arenaCenter.x - arenaSize.x/2;
+        this.arenaBottom = arenaCenter.y - arenaSize.y/2;
 
         this.image = playerImages.idle[0];
 
@@ -48,10 +56,22 @@ class Boss extends PhysicsObject{
         this.isAttacking = true;
         this.attackName = null;
         this.comboCounter = 0;
-        this.attackList = [];
-        this.agressiveness = agressiveness;
+        this.previousAttacks = [];
+        this.attackList = [
+            {name: 'dodge', difficulty: 0},
+            {name: 'homing', difficulty: 1},
+            {name: 'pistol', difficulty: 1},
+            {name: 'rapid', difficulty: 1},
+            {name: 'quad', difficulty: 1},
+            {name: 'diagonal', difficulty: 1},
+            {name: 'strafe', difficulty: 1},
+            {name: 'laser', difficulty: 1},
+            {name: 'wave', difficulty: 1}
+        ];
 
-        this.quote = '';
+        this.agressiveness = this.difficulty;
+        this.attackPower = 1 + (this.difficulty-1)/6;
+
         this.targetQuote = '';
         this.previousQuotes = [];
         this.quoteSpeed = 0.05;  // Time in between letters
@@ -99,7 +119,7 @@ class Boss extends PhysicsObject{
         this.comboList = 
         [
             [
-                {firstAttack: 'any', restrictions: ['dodge'], nextAttack: 'dodge', windup: 0.1, agression: -1}
+                {firstAttack: 'any', nextAttack: 'dodge', windup: 0.1, agression: 0.25}
             ],
             [
                 {firstAttack: 'homing', nextAttack: 'homing', agression: 1.5, windup: 0.6},
@@ -108,7 +128,8 @@ class Boss extends PhysicsObject{
                 {firstAttack: 'pistol', nextAttack: 'rapid', windup: 0.2, agression: 1.5},
                 {firstAttack: 'quad', nextAttack: 'fastDiagonal', parent: 'diagonal', agression: 1.5},
                 {firstAttack: 'diagonal', nextAttack: 'fastQuad', parent: 'quad', agression: 1.5},
-                {firstAttack: 'any', restrictions: ['laser'], nextAttack: 'laser', agression: 3}
+                {firstAttack: 'any', nextAttack: 'laser', agression: 3},
+                {firstAttack: 'wave', nextAttack: 'fastWave', parent: 'wave', agression: 3}
             ],
             [
                 {firstAttack: 'idle', nextAttack: 'homing'},
@@ -119,7 +140,9 @@ class Boss extends PhysicsObject{
                 {firstAttack: 'idle', nextAttack: 'rapid', windup: 0.5, agression: 2},
                 {firstAttack: 'idle', nextAttack: 'wave', agression: 3}
             ]
-        ]
+        ];
+        
+        this.balanceAttacks();
     }
 
     setAttacks(attackList){
@@ -134,17 +157,43 @@ class Boss extends PhysicsObject{
                     }
                 }
 
-                if(keepItem) finalList[i].push(this.comboList[i][j]);
+                if(keepItem) finalList[i].push(combo);
             }
             finalList.push([]);
         }
 
-        for(let i in finalList){
+        for(let i = finalList.length-1; i >= 0; i--){
             if(finalList[i].length == 0) finalList.splice(i, 1);
         }
 
         this.comboList = finalList;
-        console.log(this.comboList, attackList);
+    }
+
+    balanceAttacks(){
+        let finalList = [[]];
+        for(let i in this.comboList){
+            for(let j in this.comboList[i]){
+                let combo = this.comboList[i][j];
+
+                let attack;
+                if(combo.parent) attack = combo.parent;
+                else{ attack = combo.nextAttack; }
+
+                let keepItem = false;
+                for(let i in this.attackList){
+                    if(this.attackList[i].name == attack && this.attackList[i].difficulty <= this.difficulty) keepItem = true;
+                }
+
+                if(keepItem) finalList[i].push(combo);
+            }
+            finalList.push([]);
+        }
+
+        for(let i = finalList.length-1; i >= 0; i--){
+            if(finalList[i].length == 0) finalList.splice(i, 1);
+        }
+
+        this.comboList = finalList;
     }
 
     update(){
@@ -207,7 +256,7 @@ class Boss extends PhysicsObject{
     }
 
     decideNextAttack(previousAttackName){
-        console.assert(!time.isWaiting(this, 'decideNextAttack'), time.waitingFunctions(), this.attackList);
+        console.assert(!time.isWaiting(this, 'decideNextAttack'), time.waitingFunctions(), this.previousAttacks);
         this.returnToRunSpeed();
         this.currentBullets = [];
 
@@ -215,13 +264,6 @@ class Boss extends PhysicsObject{
         for(let i in this.comboList){
             for(let j in this.comboList[i]){
                 let combo = this.comboList[i][j];
-                
-                let restricted = false;
-                if(combo.restrictions){
-                    for(let r in combo.restrictions){
-                        if(combo.restrictions[r] == previousAttackName) restricted = true; 
-                    }
-                }
 
                 let parent;
                 if(combo.parent) parent = combo.parent; 
@@ -229,7 +271,7 @@ class Boss extends PhysicsObject{
 
                 if(
                     (combo.firstAttack == previousAttackName || combo.firstAttack == 'any') && 
-                    this[parent + 'CanExcecute']() && !startingAttack && !restricted
+                    this[parent + 'CanExcecute']() && !startingAttack
                 ){
                     let temp = combo;
                     this.comboList[i].splice(j, 1);
@@ -238,11 +280,16 @@ class Boss extends PhysicsObject{
                     startingAttack = true;
                     this.isAttacking = true;
                     this.attackName = new RegExp('(' + parent + ')');
-                    this.attackList.push(parent);
+                    this.previousAttacks.push(parent);
                     if(combo.agression) this.incrementCombo(combo.agression);
                     else{ this.incrementCombo(1); }
 
-                    if(combo.windup){ time.delayedFunction(this, 'delay_' + combo.nextAttack, combo.windup/this.agressiveness); }
+                    if(combo.windup){ 
+                        let trueWindup;
+                        if(parent == 'dodge') trueWindup = combo.windup / this.dodgePower;
+                        else{ trueWindup = combo.windup / this.agressiveness; }
+                        time.delayedFunction(this, 'delay_' + combo.nextAttack, trueWindup); 
+                    }
                     else{ this[combo.nextAttack](); }
                 }
             }
@@ -310,12 +357,16 @@ class Boss extends PhysicsObject{
     }
 
     dodgeCanExcecute(){
-        return this.distanceToPlayer < 50;
+        let xAttacksAgo = this.previousAttacks[this.previousAttacks.length - Math.floor(this.dodgePower)];
+        return (
+            this.distanceToPlayer < this.distanceToDodge &&
+            xAttacksAgo != 'dodge'
+        );
     }
 
     delay_dodge() { this.dodge(); }
     dodge(decideAttack = true){
-        if(this.distanceToPlayer < 65){
+        if(this.distanceToPlayer < this.distanceToDodge * 1.3){
             this.dodging = true;
 
             this.speed = this.dodgeSpeed;
@@ -373,7 +424,7 @@ class Boss extends PhysicsObject{
     }
 
     rapidCanExcecute(){
-        let previousAttack = this.attackList[this.attackList.length - 1];
+        let previousAttack = this.previousAttacks[this.previousAttacks.length - 1];
         return (
             this.distanceToPlayer.between(85, 90) && 
             this.comboCounter < 3 && previousAttack != 'rapid'
@@ -389,8 +440,8 @@ class Boss extends PhysicsObject{
         let angleChange = 0.2;
 
         let shootTime = 0.1;
-        let delay = 0.3;
-        let numShots = 4;
+        let delay = 0.3/this.agressiveness;
+        let numShots = Math.floor(4 * this.attackPower);
 
         for(let i = 0; i < numShots; i++){
             time.delayedFunction(this, 'shootBullet', shootTime*i+delay, [angle + angleChange*i+angleInit, 200]);
@@ -403,7 +454,7 @@ class Boss extends PhysicsObject{
     }
 
     diagonalCanExcecute(){
-        let previousAttack = this.attackList[this.attackList.length - 1];
+        let previousAttack = this.previousAttacks[this.previousAttacks.length - 1];
         return (
             (this.futureAngleToPlayer % PI/2).between(PI/4 - 0.4, PI/4 + 0.4) &&
             this.distanceToPlayer.between(60, 85) &&
@@ -416,7 +467,7 @@ class Boss extends PhysicsObject{
     fastQuad(){ this.quad(0, true, 'quad'); }
 
     quadCanExcecute(){
-        let previousAttack = this.attackList[this.attackList.length - 1];
+        let previousAttack = this.previousAttacks[this.previousAttacks.length - 1];
         return (
             (this.futureAngleToPlayer % PI/2).between(0.4, PI/2 - 0.4) &&
             this.distanceToPlayer.between(60, 85) &&
@@ -432,12 +483,12 @@ class Boss extends PhysicsObject{
 
         let shootTime, delay;
         if(isFast){
-            shootTime = 0.08;
+            shootTime = 0.08/this.attackPower;
             delay = 0;
         }
         else{
-            shootTime = 0.12;
-            delay = 0.12;
+            shootTime = 0.12/this.attackPower;
+            delay = 0.12/this.agressiveness;
         }
         let numShots = 4;
 
@@ -465,7 +516,7 @@ class Boss extends PhysicsObject{
     }
 
     laserCanExcecute(){
-        let previousAttack = this.attackList[this.attackList.length - 1];
+        let previousAttack = this.previousAttacks[this.previousAttacks.length - 1];
         return (
             (this.position.magnitude > 120 || this.target.position.magnitude > 120) && 
             this.comboCounter < 6.5 &&
@@ -478,7 +529,7 @@ class Boss extends PhysicsObject{
     laser(){
         this.speed = this.shootSpeed/2;
 
-        let delay = 0.5;
+        let delay = 0.5/this.agressiveness;
         let shootTime = 0.04;
         let laserDuration = 2;
         let numShots = Math.floor(laserDuration / shootTime);
@@ -510,18 +561,21 @@ class Boss extends PhysicsObject{
     }
 
     waveCanExcecute(){
+        let xAttacksAgo = this.previousAttacks[this.previousAttacks.length - Math.floor(3*this.attackPower)];
         return(
             this.distanceToPlayer.between(90, 110) &&
             this.futureDistanceToPlayer.between(80, 100) &&
-            this.comboCounter < 6.5
+            this.comboCounter < 6.5 && 
+            xAttacksAgo != 'wave'
         );
     }
 
+    fastWave(){ this.wave(0.8); }
     delay_wave(){ this.wave(); }
-    wave(){
-        let delay = 1;
+    wave(delay = 1){
         this.speed = 0;
-        time.delayedFunction(this, 'waveFinish', delay);
+        let trueDelay = delay/this.agressiveness;
+        time.delayedFunction(this, 'waveFinish', trueDelay);
     }
 
     waveFinish(){
@@ -552,9 +606,9 @@ class Boss extends PhysicsObject{
         this.friction = 10;
         this.clockwise = !this.clockwise;
 
-        let numShots = 4;
-        let shootTime = 0.4;
-        let delay = 0.2;
+        let numShots = Math.floor(4 * this.attackPower);
+        let shootTime = 0.4 / this.localspeedMult;
+        let delay = 0.2 / this.agressiveness;
 
         for(let i = 0; i < numShots; i++){
             time.delayedFunction(this, 'strafe_shootBullet', shootTime*i+delay);
@@ -602,8 +656,8 @@ class Boss extends PhysicsObject{
     }
 
     homingCanExcecute(){
-        let twoAttacksAgo = this.attackList[this.attackList.length - 3];
-        return this.distanceToPlayer > 110 && this.comboCounter < 4 && twoAttacksAgo != 'homing';
+        let xAttacksAgo = this.previousAttacks[this.previousAttacks.length - Math.floor(3*this.attackPower)];
+        return this.distanceToPlayer > 110 && this.comboCounter < 4 && xAttacksAgo != 'homing';
     }
 
     delay_homing(){ this.homing(); }
@@ -618,18 +672,18 @@ class Boss extends PhysicsObject{
     }
 
     updateQuote(){
-        if(this.quote == this.targetQuote && this.targetQuote != ''){
+        if(scene.quote == this.targetQuote && this.targetQuote != ''){
             time.delayedFunction(this, 'endQuote', 1);
             time.delayedFunction(this, 'decideNextQuote', 2);
         }
         else{
-            this.quote += this.targetQuote.charAt(this.quote.length);
+            scene.quote += this.targetQuote.charAt(scene.quote.length);
             time.delayedFunction(this, 'updateQuote', this.quoteSpeed);
         }
     }
 
     endQuote(){
-        this.quote = '';
+        scene.quote = '';
         this.targetQuote = '';
     }
 

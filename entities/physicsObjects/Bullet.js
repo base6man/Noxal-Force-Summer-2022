@@ -28,6 +28,10 @@ class Bullet extends PhysicsObject{
         
     }
 
+    makeColliderGenerous(){
+        this.collider.radius = this.image.height / 2;
+    }
+
     update(){
         if(this.isFirstFrame){
             time.delayedFunction(this, 'dissapate', this.timeAlive);

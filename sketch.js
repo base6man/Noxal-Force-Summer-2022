@@ -1,4 +1,4 @@
-let scene, intro;
+let scene, transition;
 let skipIntro = true;
 
 let bulletImage;
@@ -9,10 +9,12 @@ let playerImages = {}
 let time;
 let isFirstFrame = true;
 let globalTimescale = 0.9;
-let steps = 1;
+let steps = 3;
 let collisionSteps = 2;
 
 let pixelSize = 5;
+
+let difficulty = 1;
 
 let layerMap = [
   {a: 'default', b: 'default'},
@@ -97,12 +99,17 @@ function setup(){
     createScene();
   }
   else{
-    intro = new Intro([
+    transition = new Transition([
       'Welcome to Noxal Force!', 
       'This is a game about escaping a castle.', 
-      'Your cell is oppressive,', 
-      'Your work is intolerable,',
-      'And it is time to escape.'
+      'Once the thriving center of a great kingdom, \nMortimor Keep has fallen to ruin.', 
+      'The Tower Gardens are long collapsed, \nnow crawling with spikeroot.',
+      'Our once famous dining hall may still exist, \nbut nobody has seen it in years.',
+      'The secret vault still stands, \nbut its treasure is rumored to be gone.',
+      'Indeed, the Seven Walls have nothing left to protect.',
+      'So go.',
+      'Escape.',
+      'There is nothing for you here.'
     ]);
   }
 }
@@ -110,6 +117,12 @@ function setup(){
 function createScene(){
   scene = new Scene();
   scene.setup();
+}
+
+function killScene(newTransition = new Transition([])){
+  scene = null;
+  time.stopFunctionsWithinScene();
+  transition = newTransition;
 }
 
 // Start draws all images
@@ -127,7 +140,7 @@ function draw(){
   imageTime = 0;
   imageCount = 0;
 
-  background(200);
+  background(0);
 
   if(isFirstFrame){
     start();
@@ -138,15 +151,16 @@ function draw(){
     scene.update();
     scene.updateImage();
     scene.updateExtras();
+    scene.checkForGameOver();
   }
   else{
     for(let stepNum = 0; stepNum < steps; stepNum++) 
       time.update();
-    if(intro) intro.update();
+    if(transition) transition.update();
   }
 
   let endTime = new Date();
-  console.log('time drawing images: ' + imageTime, 'time otherwise: ' + (endTime-startTime-imageTime));
+  //console.log('time drawing images: ' + imageTime, 'time otherwise: ' + (endTime-startTime-imageTime));
   //console.log(imageCount);
 }
 

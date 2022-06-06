@@ -18,6 +18,8 @@ class Player extends PhysicsObject{
         this.runSpeed = 1;
         this.dashSpeed = 4;
         this.stopDashSpeed = 0.3;
+        this.endTeleportSpeed = 4.5;
+
         this.dashTime = 0.2;
         this.stopDashTime = 0.1;
         this.dashCooldownTime = 0.5;
@@ -132,6 +134,7 @@ class Player extends PhysicsObject{
             // Offset done later
             this.attackObject = new Bullet(bulletImage[1], this.position);
             this.attackObject.melee = true;
+            this.attackObject.makeColliderGenerous();
         
             this.attackObject.collider.layer = 'playerAttack';
             this.attackObject.collider.isTrigger = true;
@@ -217,8 +220,11 @@ class Player extends PhysicsObject{
         }
         else if (this.teleporting && !this.ghostKeysPressed()){
             this.teleporting = false;
+
             this.position = this.ghost.position;
-            this.velocity = this.ghost.velocity;
+            this.velocity = this.ghost.velocity.copy();
+            this.velocity.magnitude = this.endTeleportSpeed * this.speedMult;
+
             this.ghost.delete();
             this.ghost = null;
             this.attack();

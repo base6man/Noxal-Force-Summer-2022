@@ -19,7 +19,7 @@ class MainCamera{
 
         this.offset;
         this.offsetMagnitude = 0;
-        this.speed = 1;
+        this.speed = 3;
 
         this.freezX;
         this.freezY;
@@ -42,11 +42,11 @@ class MainCamera{
 
         let myPos = this.position;
         let targetPos = this.target.position.add(this.offset);
+        
+        if(this.freezX){ targetPos.x = this.startX; }
+        if(this.freezY){ targetPos.y = this.startY; }
 
         this.position = myPos.lerp(targetPos, this.speed * time.deltaTime);
-
-        if(this.freezX){ this.position.x = this.startX; }
-        if(this.freezY){ this.position.y = this.startY; }
     }
 
     get pixelPosition(){
@@ -73,16 +73,16 @@ class MainCamera{
     }
 
     get topEdge(){
-        return this.position.y + height / 2 / pixelSize;
+        return this.position.y + height / this.zoom / 2 / pixelSize;
     }
     get leftEdge(){
-        return this.position.x - width / 2 / pixelSize;
+        return this.position.x - width / this.zoom / 2 / pixelSize;
     }
     get rightEdge(){
-        return this.position.x + (width / 2 - (width - this.width*pixelSize)) / pixelSize;
+        return this.position.x + (width / this.zoom / 2 - (width - this.width*pixelSize)) / pixelSize;
     }
     get bottomEdge(){
-        return this.position.y - (height / 2 + (height - this.height*pixelSize)) / pixelSize;
+        return this.position.y - (height / this.zoom / 2 + (height - this.height*pixelSize)) / pixelSize;
     }
 
     isOffScreen(image, x, y){
