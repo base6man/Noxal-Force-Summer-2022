@@ -50,8 +50,6 @@ class Boss extends PhysicsObject{
         this.arenaLeft = arenaCenter.x - arenaSize.x/2;
         this.arenaBottom = arenaCenter.y - arenaSize.y/2;
 
-        this.image = playerImages.idle[0];
-
         this.target = scene.player;
         this.isAttacking = true;
         this.attackName = null;
@@ -143,6 +141,7 @@ class Boss extends PhysicsObject{
         ];
         
         this.balanceAttacks();
+        this.createAnimations();
     }
 
     setAttacks(attackList){
@@ -196,6 +195,31 @@ class Boss extends PhysicsObject{
         this.comboList = finalList;
     }
 
+    createAnimations(){
+        let listOfAnimations = [];
+
+        let idleAnimation = {
+            name: 'idle',
+            animation: new Animator('idle', bossImages.idle, 0.8),
+            get canRun(){
+                return !scene.bossManager.boss.isAttacking;
+            }
+        }
+        listOfAnimations.push(idleAnimation);
+
+        let attackAnimation = {
+            name: 'attack',
+            animation: new Animator('attack', bossImages.attack, 0.3),
+            get canRun(){
+                return scene.bossManager.boss.isAttacking;
+            }
+        }
+        listOfAnimations.push(attackAnimation);
+
+
+        this.animationManager = new AnimationManager(listOfAnimations);
+    }
+
     update(){
         if(!this.knockedback) this.velocity = this.updateVelocity(); 
         this.teleportThroughWalls();
@@ -204,10 +228,13 @@ class Boss extends PhysicsObject{
             // Get the bullets the same relative to the boss
             this.currentBullets[i].position = this.currentBullets[i].position.add(this.velocity.multiply(time.deltaTime));
         }
+        
+        this.animationManager.update();
     }
 
     updateImage(){
-        this.image.draw(this.position.x, this.position.y);
+        this.animationManager.draw(this.position.x, this.position.y, this.direction);
+        console.log('Boss image: '+ this.animationManager.currentAnimation.currentImage.name);
     }
 
     updateVelocity(){

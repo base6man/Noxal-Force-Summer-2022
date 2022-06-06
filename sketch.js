@@ -5,6 +5,9 @@ let bulletImage;
 let floorImages;
 let playerRunning, playerIdle, playerDiagonal;
 let playerImages = {}
+let bossIdle, bossAttack;
+let bossImages = {}
+let allImages;
 
 let time;
 let isFirstFrame = true;
@@ -77,22 +80,35 @@ function preload() {
     loadImage("images/bullet(3).png"),
     loadImage("images/bullet(2).png")
   ]
+
+  bossIdle = [
+    loadImage("images/bossImages/bossIdle(0).png")
+  ]
+  bossAttack = [
+    loadImage("images/bossImages/bossAttack(0).png")
+  ]
 }
 
 function setup(){
   time = new Time();
   createCanvas(windowWidth, windowHeight - 4);
-  
-  for(let i in playerIdle){     playerIdle[i]     = new Canvas(playerIdle[i]);     }
-  for(let i in playerRunning){  playerRunning[i]  = new Canvas(playerRunning[i]);  }
-  for(let i in playerDiagonal){ playerDiagonal[i] = new Canvas(playerDiagonal[i]); }
-  for(let i in floorImage){     floorImage[i]     = new Canvas(floorImage[i]);     }
-  for(let i in bulletImage){    bulletImage[i]    = new Canvas(bulletImage[i]);    }
+
+  allImages = [playerRunning, playerIdle, playerDiagonal, floorImage, bulletImage, bossIdle, bossAttack];
+  for(let i in allImages){
+    for(let j in allImages[i]){
+      allImages[i][j] = new Canvas(allImages[i][j]);
+    }
+  }
 
   playerImages = {
     idle: playerIdle,
     running: playerRunning,
     diagonal: playerDiagonal
+  }
+
+  bossImages = {
+    idle: playerIdle,
+    attack: playerRunning
   }
   
   if(skipIntro){
