@@ -17,6 +17,7 @@ class Wall extends PhysicsObject{
 
         this.canvas = new Canvas(null, this.width, this.height);
         this.canvas.name = 'wall';
+        if(!isFirstFrame) this.canvas.setup();
 
         this.index = scene.walls.length;
         scene.walls.push(this);
@@ -24,5 +25,22 @@ class Wall extends PhysicsObject{
 
     updateImage(){
         this.canvas.draw(this.position.x, this.position.y);
+    }
+
+    delete(){
+        scene.walls.splice(this.index, 1);
+        this.collider.delete();
+        time.stopFunctions(this, null);
+        for(let i = this.index; i < scene.walls.length; i++){
+          scene.walls[i].moveDownOneIndex();
+        }
+
+        for(let i in scene.walls){
+            console.assert(scene.walls[i].index == i);
+        }
+    }
+
+    moveDownOneIndex(){
+        this.index--;
     }
 }

@@ -92,7 +92,13 @@ class Player extends PhysicsObject{
         super.update();
         if(this.ghost) this.ghost.update();
         
+    }
+    
+    updateImage(){
+        if(this.ghost) this.ghost.updateImage();
+        
         this.animationManager.update();
+        this.animationManager.draw(this.position.x, this.position.y, this.direction);
     }
 
     dash(){
@@ -162,10 +168,6 @@ class Player extends PhysicsObject{
         this.canAttack = true;
     }
 
-    updateImage(){
-        if(this.ghost) this.ghost.updateImage();
-        this.animationManager.draw(this.position.x, this.position.y, this.direction);
-    }
 
     updateVelocity(){
         let input = new Vector(0, 0);

@@ -13,11 +13,11 @@ let time;
 let isFirstFrame = true;
 let globalTimescale = 0.9;
 let steps = 3;
-let collisionSteps = 2;
+let collisionSteps = 5;
 
 let pixelSize = 5;
 
-let difficulty = 1;
+let difficulty = 3;
 
 let layerMap = [
   {a: 'default', b: 'default'},
@@ -107,8 +107,8 @@ function setup(){
   }
 
   bossImages = {
-    idle: playerIdle,
-    attack: playerRunning
+    idle: bossIdle,
+    attack:bossAttack
   }
   
   if(skipIntro){
@@ -144,11 +144,11 @@ function killScene(newTransition = new Transition([])){
 // Start draws all images
 // Do not move this to setup
 function start(){
-  for(let i in floorImage){     floorImage[i].setup();     }
-  for(let i in bulletImage){    bulletImage[i].setup();    }
-  for(let i in playerIdle){     playerIdle[i].setup();     }
-  for(let i in playerRunning){  playerRunning[i].setup();  }
-  for(let i in playerDiagonal){ playerDiagonal[i].setup(); }
+  for(let i in allImages){
+    for(let j in allImages[i]){
+      allImages[i][j].setup();
+    }
+  }
 }
 
 function draw(){

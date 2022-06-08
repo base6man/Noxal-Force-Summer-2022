@@ -28,7 +28,7 @@ class MainCamera{
     }
 
     update(){
-        if(this.target.position.insideOf(new Vector(-150, -90), new Vector(150, 90))){
+        if(scene.bossManager.boss){
             this.freezX = true;
             this.freezY = true;
         }

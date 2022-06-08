@@ -35,7 +35,8 @@ class Scene{
         new Wall(new Vector(-1000, -80),    new Vector(-20, -1000));
         new Wall(new Vector(1000, -80),    new Vector(20, -1000));
         new Wall(new Vector(150, -1000),   new Vector(1000, 1000));
-        new Wall(new Vector(-1000, 1000), new Vector(1000, 80));
+        new Wall(new Vector(-20, 1000), new Vector(-1000, 80));
+        new Wall(new Vector(20, 1000), new Vector(1000, 80));
         new Wall(new Vector(-1000, -1000), new Vector(-150, 1000));
     }
 
@@ -120,6 +121,7 @@ class Scene{
     }
 
     checkForGameOver(){
+        if(this.player.position.y > 90) this.gameOver = true;
         if(this.gameOver){
             let winlose = new Transition([]);
             if(this.player.health <= 0){

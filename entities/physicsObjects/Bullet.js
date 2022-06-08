@@ -10,6 +10,8 @@ class Bullet extends PhysicsObject{
         this.image = image;
         this.image.name = 'bullet';
 
+        this.melee = false;
+
         this.collider = new CircleCollider(this, 0, 0, this.image.height/2 - 2);
         this.collider.layer = 'enemyAttack';
         this.collider.isTrigger = true;

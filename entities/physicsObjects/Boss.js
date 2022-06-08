@@ -10,25 +10,28 @@ class Boss extends PhysicsObject{
         this.collider.layer = 'boss';
         this.name = 'boss';
 
-        this.difficulty = difficulty;
+        this.runSpeed = 7;
 
-        this.runSpeed = 9;
+        this.difficulty = difficulty;
+        this.agressiveness = this.difficulty;
+        this.attackPower = 1 + (this.difficulty-1)/3;
+        this.shootSpeed = this.runSpeed * (this.difficulty-1)/5;
+        this.localspeedMult = 1 + (this.difficulty-1)/3;
+        this.dodgePower = 1 + (this.difficulty-1)/2;
+
         this.normalMinDistance = 50;
         this.normalMaxDistance = 100;
         this.minDistance = this.normalMinDistance;
         this.maxDistance = this.normalMaxDistance;
 
-        this.shootSpeed = this.runSpeed * (this.difficulty-1)/5;
         this.strafeSpeed = 12;
 
-        this.localspeedMult = 1 + (this.difficulty-1)/4;
         this.speedMult = 8 * this.localspeedMult;
         this.speed = this.runSpeed;
         this.normalFriction = 2;
         this.friction = this.normalFriction;
         this.clockwise = true;
         
-        this.dodgePower = 1 + (this.difficulty-1)/2;
         this.distanceToDodge = 50 * (this.dodgePower + 2)/3;
         //this.distanceFromGhostToDodge = 10 * (dodgePower + 2)/3;
 
@@ -51,24 +54,25 @@ class Boss extends PhysicsObject{
         this.arenaBottom = arenaCenter.y - arenaSize.y/2;
 
         this.target = scene.player;
-        this.isAttacking = true;
+        this.isAttacking = false;
         this.attackName = null;
         this.comboCounter = 0;
         this.previousAttacks = [];
         this.attackList = [
             {name: 'dodge', difficulty: 0},
+            {name: 'circleShield', difficulty: 0, maxDifficulty: 0},
             {name: 'homing', difficulty: 1},
             {name: 'pistol', difficulty: 1},
             {name: 'rapid', difficulty: 1},
             {name: 'quad', difficulty: 1},
             {name: 'diagonal', difficulty: 1},
+            {name: 'eightWay', difficulty: 3},
             {name: 'strafe', difficulty: 1},
-            {name: 'laser', difficulty: 1},
-            {name: 'wave', difficulty: 1}
+            {name: 'laser', difficulty: 2},
+            {name: 'wave', difficulty: 2}
         ];
 
-        this.agressiveness = this.difficulty;
-        this.attackPower = 1 + (this.difficulty-1)/6;
+        this.myWall;
 
         this.targetQuote = '';
         this.previousQuotes = [];
@@ -76,17 +80,17 @@ class Boss extends PhysicsObject{
         this.quoteList = 
         [
             [
-                new Quote(this, 'Hello!', [], 1),
-                new Quote(this, "Let's start with the basics.", [], 2),
-                new Quote(this, 'Use the WASD keys to move.', [], 3),
-                new Quote(this, 'Press SPACE to dash.', [], 4),
-                new Quote(this, 'Dashing into me will deal damage.', [], 5),
-                new Quote(this, "Though that's not something we want, is it?", [], 6),
-                new Quote(this, "You can control your ghost with the IJKL keys.", [], 7),
-                new Quote(this, 'It will allow you to teleport somewhere else!', [], 8)
+                new Quote(this, 'Hello!', [{name: 'difficultyIs', param: [0]}], 1),
+                new Quote(this, "Let's start with the basics.", [{name: 'difficultyIs', param: [0]}], 2),
+                new Quote(this, 'Use the WASD keys to move.', [{name: 'difficultyIs', param: [0]}], 3),
+                new Quote(this, 'Press SPACE to dash.', [{name: 'difficultyIs', param: [0]}], 4),
+                new Quote(this, 'Dashing into me will deal damage.', [{name: 'difficultyIs', param: [0]}], 5),
+                new Quote(this, "Though that's not something we want, is it?", [{name: 'difficultyIs', param: [0]}], 6),
+                new Quote(this, "You can control your ghost with the IJKL keys.", [{name: 'difficultyIs', param: [0]}], 7),
+                new Quote(this, 'It will allow you to teleport somewhere else!', [{name: 'difficultyIs', param: [0]}], 8)
             ],
             [
-                {quote: 'Nothing much is happening in battle right now.', canExcecute: function(){ return true; }}, // Look, I'm tired
+                {quote: 'No quote', canExcecute: function(){ return true; }}, // Easy way when he doesn't have anything to say
             ]
         ]
         time.delayedFunction(this, 'decideNextQuote', 1);
@@ -117,7 +121,8 @@ class Boss extends PhysicsObject{
         this.comboList = 
         [
             [
-                {firstAttack: 'any', nextAttack: 'dodge', windup: 0.1, agression: 0.25}
+                {firstAttack: 'any', nextAttack: 'dodge', windup: 0.1, agression: 0.25},
+                {firstAttack: 'any', nextAttack: 'circleShield'},
             ],
             [
                 {firstAttack: 'homing', nextAttack: 'homing', agression: 1.5, windup: 0.6},
@@ -126,16 +131,18 @@ class Boss extends PhysicsObject{
                 {firstAttack: 'pistol', nextAttack: 'rapid', windup: 0.2, agression: 1.5},
                 {firstAttack: 'quad', nextAttack: 'fastDiagonal', parent: 'diagonal', agression: 1.5},
                 {firstAttack: 'diagonal', nextAttack: 'fastQuad', parent: 'quad', agression: 1.5},
-                {firstAttack: 'any', nextAttack: 'laser', agression: 3},
-                {firstAttack: 'wave', nextAttack: 'fastWave', parent: 'wave', agression: 3}
+                {firstAttack: 'wave', nextAttack: 'fastWave', parent: 'wave', agression: 3},
+                {firstAttack: 'wave', nextAttack: 'fastLaser', parent: 'laser', agression: 3}
             ],
             [
-                {firstAttack: 'idle', nextAttack: 'homing'},
+                {firstAttack: 'idle', nextAttack: 'homing', agression: 0.75},
                 {firstAttack: 'idle', nextAttack: 'strafe'},
-                {firstAttack: 'idle', nextAttack: 'pistol'},
-                {firstAttack: 'idle', nextAttack: 'quad', agression: 1.5},
-                {firstAttack: 'idle', nextAttack: 'diagonal', agression: 1.5},
+                {firstAttack: 'idle', nextAttack: 'pistol', agression: 0.5},
+                {firstAttack: 'idle', nextAttack: 'eightWay', agression: 2.5},
+                {firstAttack: 'idle', nextAttack: 'quad'},
+                {firstAttack: 'idle', nextAttack: 'diagonal'},
                 {firstAttack: 'idle', nextAttack: 'rapid', windup: 0.5, agression: 2},
+                {firstAttack: 'any', nextAttack: 'laser', agression: 3},
                 {firstAttack: 'idle', nextAttack: 'wave', agression: 3}
             ]
         ];
@@ -180,7 +187,14 @@ class Boss extends PhysicsObject{
 
                 let keepItem = false;
                 for(let i in this.attackList){
-                    if(this.attackList[i].name == attack && this.attackList[i].difficulty <= this.difficulty) keepItem = true;
+                    let myAttack = this.attackList[i];
+                    if(myAttack.name == attack && 
+                        myAttack.difficulty <= this.difficulty &&
+                        (myAttack.maxDifficulty >= this.difficulty || typeof myAttack.maxDifficulty == 'undefined')
+                    ){ 
+                        if(myAttack.name == 'circleShield') console.log(myAttack.maxDifficulty, this.difficulty);
+                        keepItem = true;
+                    }
                 }
 
                 if(keepItem) finalList[i].push(combo);
@@ -198,6 +212,17 @@ class Boss extends PhysicsObject{
     createAnimations(){
         let listOfAnimations = [];
 
+
+        let attackAnimation = {
+            name: 'attack',
+            animation: new Animator('attack', bossImages.attack, 0.3),
+            get canRun(){
+                return scene.bossManager.boss.isAttacking && scene.bossManager.boss.previousAttacks[scene.bossManager.boss.previousAttacks.length - 1] != 'dodge';
+            }
+        }
+        listOfAnimations.push(attackAnimation);
+
+        
         let idleAnimation = {
             name: 'idle',
             animation: new Animator('idle', bossImages.idle, 0.8),
@@ -207,34 +232,25 @@ class Boss extends PhysicsObject{
         }
         listOfAnimations.push(idleAnimation);
 
-        let attackAnimation = {
-            name: 'attack',
-            animation: new Animator('attack', bossImages.attack, 0.3),
-            get canRun(){
-                return scene.bossManager.boss.isAttacking;
-            }
-        }
-        listOfAnimations.push(attackAnimation);
-
-
         this.animationManager = new AnimationManager(listOfAnimations);
     }
 
     update(){
+        let initialPosition = this.position.copy();
+
         if(!this.knockedback) this.velocity = this.updateVelocity(); 
         this.teleportThroughWalls();
         super.update();
         for(let i in this.currentBullets){
             // Get the bullets the same relative to the boss
-            this.currentBullets[i].position = this.currentBullets[i].position.add(this.velocity.multiply(time.deltaTime));
+            this.currentBullets[i].position = this.currentBullets[i].position.add(this.position).subtract(initialPosition);
         }
-        
-        this.animationManager.update();
     }
 
     updateImage(){
+        console.log('Updating animations!');
+        this.animationManager.update();
         this.animationManager.draw(this.position.x, this.position.y, this.direction);
-        console.log('Boss image: '+ this.animationManager.currentAnimation.currentImage.name);
     }
 
     updateVelocity(){
@@ -387,7 +403,7 @@ class Boss extends PhysicsObject{
         let xAttacksAgo = this.previousAttacks[this.previousAttacks.length - Math.floor(this.dodgePower)];
         return (
             this.distanceToPlayer < this.distanceToDodge &&
-            xAttacksAgo != 'dodge'
+            (xAttacksAgo != 'dodge' || difficulty == 0)
         );
     }
 
@@ -416,6 +432,31 @@ class Boss extends PhysicsObject{
         this.dodging = false;
         this.speed = this.runSpeed;
         if(decideAttack){ this.decideNextAttack('dodge'); }
+    }
+
+    circleShieldCanExcecute(){
+        return true;
+    }
+
+    circleShield(){
+        let numShots = 8;
+        let delay = 0;
+        let shootTime = 0.05;
+        let angleInit = 0;
+        let angleChange = PI/4;
+
+        for(let i = 0; i < numShots; i++){
+            time.delayedFunction(this, 'circleShield_shootBullet', shootTime*i+delay, [angleChange*i+angleInit, 0.00001, 15]);
+        }
+    }
+
+    circleShield_shootBullet(angle, speed, offset){
+        let myBullet = this.shootBullet(angle, speed, offset)
+        if(myBullet) {
+            this.currentBullets.push(myBullet);
+            myBullet.timeAlive = Infinity;
+            myBullet.melee = true;
+        }
     }
 
     returnToRunSpeed(){
@@ -463,12 +504,12 @@ class Boss extends PhysicsObject{
         let angle = this.futureAngleToPlayer;
         this.speed = this.shootSpeed;
 
-        let angleInit = -0.2;
-        let angleChange = 0.2;
+        let angleInit = -0.1 * this.attackPower;
+        let angleChange = 0.1 + 0.1 / this.attackPower;
 
         let shootTime = 0.1;
         let delay = 0.3/this.agressiveness;
-        let numShots = Math.floor(4 * this.attackPower);
+        let numShots = Math.floor(3 * this.attackPower);
 
         for(let i = 0; i < numShots; i++){
             time.delayedFunction(this, 'shootBullet', shootTime*i+delay, [angle + angleChange*i+angleInit, 200]);
@@ -480,33 +521,38 @@ class Boss extends PhysicsObject{
         this.decideNextAttack('rapid');
     }
 
+    quadCanExcecute(){
+        let previousAttack = this.previousAttacks[this.previousAttacks.length - 1];
+        return (
+            (this.futureAngleToPlayer % PI/2).between(0.4, PI/2 - 0.4) &&
+            this.distanceToPlayer.between(60, 110) &&
+            this.comboCounter < 4 && previousAttack != 'quad'
+        );
+    }
+
     diagonalCanExcecute(){
         let previousAttack = this.previousAttacks[this.previousAttacks.length - 1];
         return (
             (this.futureAngleToPlayer % PI/2).between(PI/4 - 0.4, PI/4 + 0.4) &&
-            this.distanceToPlayer.between(60, 85) &&
+            this.distanceToPlayer.between(60, 110) &&
             this.comboCounter < 4 && previousAttack != 'diagonal'
         );
+    }
+
+    eightWayCanExcecute(){
+        return this.quadCanExcecute() || this.diagonalCanExcecute();
+    }
+    eightWay(){
+        this.quad(0, true, 'eightWay', PI/4)
     }
 
     diagonal(){ this.quad(PI/4), false, 'diagonal'; }
     fastDiagonal(){ this.quad(PI/4, true, 'diagonal'); }
     fastQuad(){ this.quad(0, true, 'quad'); }
 
-    quadCanExcecute(){
-        let previousAttack = this.previousAttacks[this.previousAttacks.length - 1];
-        return (
-            (this.futureAngleToPlayer % PI/2).between(0.4, PI/2 - 0.4) &&
-            this.distanceToPlayer.between(60, 85) &&
-            this.comboCounter < 4 && previousAttack != 'quad'
-        );
-    }
-
     delay_quad(){ this.quad(); }
-    quad(angleInit = 0, isFast = false, name = 'quad'){
+    quad(angleInit = 0, isFast = false, name = 'quad', angleChange = PI/2){
         this.speed = this.shootSpeed;
-
-        let angleChange = PI/2;
 
         let shootTime, delay;
         if(isFast){
@@ -517,7 +563,10 @@ class Boss extends PhysicsObject{
             shootTime = 0.12/this.attackPower;
             delay = 0.12/this.agressiveness;
         }
-        let numShots = 4;
+
+        // Because it should go in exactly one circle
+        let numShots = 2*PI / angleChange;
+        console.assert(Math.floor(numShots) == numShots, angleChange, numShots);
 
         for(let i = 0; i < numShots; i++){
             time.delayedFunction(this, 'quad_shootBullet', shootTime*i+delay, [angleChange*i+angleInit, 0.001, 5]);
@@ -552,11 +601,12 @@ class Boss extends PhysicsObject{
         );
     }
 
+    fastLaser(){ this.laser(0)}
     delay_laser(){ this.laser(); }
-    laser(){
+    laser(delay = 1){
         this.speed = this.shootSpeed/2;
 
-        let delay = 0.5/this.agressiveness;
+        delay = delay/this.agressiveness;
         let shootTime = 0.04;
         let laserDuration = 2;
         let numShots = Math.floor(laserDuration / shootTime);
@@ -588,7 +638,7 @@ class Boss extends PhysicsObject{
     }
 
     waveCanExcecute(){
-        let xAttacksAgo = this.previousAttacks[this.previousAttacks.length - Math.floor(3*this.attackPower)];
+        let xAttacksAgo = this.previousAttacks[this.previousAttacks.length - Math.floor(1*this.attackPower)];
         return(
             this.distanceToPlayer.between(90, 110) &&
             this.futureDistanceToPlayer.between(80, 100) &&
@@ -597,9 +647,9 @@ class Boss extends PhysicsObject{
         );
     }
 
-    fastWave(){ this.wave(0.8); }
+    fastWave(){ this.wave(1.2); }
     delay_wave(){ this.wave(); }
-    wave(delay = 1){
+    wave(delay = 1.8){
         this.speed = 0;
         let trueDelay = delay/this.agressiveness;
         time.delayedFunction(this, 'waveFinish', trueDelay);
@@ -633,7 +683,7 @@ class Boss extends PhysicsObject{
         this.friction = 10;
         this.clockwise = !this.clockwise;
 
-        let numShots = Math.floor(4 * this.attackPower);
+        let numShots = Math.floor(3 * this.attackPower);
         let shootTime = 0.4 / this.localspeedMult;
         let delay = 0.2 / this.agressiveness;
 
@@ -683,7 +733,7 @@ class Boss extends PhysicsObject{
     }
 
     homingCanExcecute(){
-        let xAttacksAgo = this.previousAttacks[this.previousAttacks.length - Math.floor(3*this.attackPower)];
+        let xAttacksAgo = this.previousAttacks[this.previousAttacks.length - Math.floor(2*this.attackPower)];
         return this.distanceToPlayer > 110 && this.comboCounter < 4 && xAttacksAgo != 'homing';
     }
 
@@ -755,7 +805,9 @@ class Boss extends PhysicsObject{
                 this.invincible = true;
                 time.delayedFunction(this, 'endInvincibility', this.invinTime);
                 if(this.health <= 0){
-                    scene.gameOver = true;
+                    if(this.myWall) this.myWall.delete();
+                    time.stopFunctions(this, null);
+                    scene.bossManager.killBoss();
                 }
                     
                 let knockbackVector = this.position.subtract(this.target.position);
