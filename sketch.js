@@ -17,7 +17,7 @@ let collisionSteps = 5;
 
 let pixelSize = 5;
 
-let difficulty = 0;
+let difficulty = 1;
 let songs;
 let currentSong;
 
