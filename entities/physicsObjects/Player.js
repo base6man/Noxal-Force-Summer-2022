@@ -34,10 +34,10 @@ class Player extends PhysicsObject{
         this.direction = 'right';
 
         this.health = 3;
-        this.knockbackSpeed = 15;
+        this.knockbackSpeed = 10;
         this.invincible = false;
         this.invincibilityTime = 1;
-        this.knockbackTime = 0;
+        this.knockbackTime = 0.05;
         this.knockedback = false;
 
         this.teleporting = false;
@@ -96,7 +96,7 @@ class Player extends PhysicsObject{
     
     updateImage(){
         if(this.ghost) this.ghost.updateImage();
-        
+
         this.animationManager.update();
         this.animationManager.draw(this.position.x, this.position.y, this.direction);
     }
@@ -252,7 +252,7 @@ class Player extends PhysicsObject{
             if(!this.invincible){
                 this.health -= 1;
                 this.invincible = true;
-                this.knockedBack = true;
+                this.knockedback = true;
                 time.delayedFunction(this, 'endInvincibility', this.invincibilityTime);
                 time.delayedFunction(this, 'endKnockback', this.knockbackTime);
                 if(this.health <= 0){
@@ -264,6 +264,16 @@ class Player extends PhysicsObject{
             knockbackVector.magnitude = this.knockbackSpeed * this.speedMult;
 
             this.velocity = knockbackVector;
+        }
+        else if (other.collider.layer == 'blueBullet'){
+
+            let knockbackVector = this.position.subtract(other.position);
+            knockbackVector.magnitude = this.knockbackSpeed * this.speedMult / 2;
+            this.velocity = knockbackVector;
+            
+            this.knockedback = true;
+            time.delayedFunction(this, 'endKnockback', this.knockbackTime);
+            console.log('has been hit.');
         }
     }
 }

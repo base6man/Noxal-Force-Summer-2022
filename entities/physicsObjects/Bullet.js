@@ -30,6 +30,11 @@ class Bullet extends PhysicsObject{
         
     }
 
+    makeBlueBullet(){
+        this.collider.layer = 'blueBullet';
+        this.image = bulletImage[3];
+    }
+
     makeColliderGenerous(){
         this.collider.radius = this.image.height / 2;
     }

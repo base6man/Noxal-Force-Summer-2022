@@ -40,6 +40,9 @@ class BoxCollider extends Collider{
             else if(scene.colliders[j].type == 'BoxCollider' && scene.colliders[j] != this){
                 this.boxBoxCollision(this, scene.colliders[j]);
             }
+            else if(scene.colliders[j].type == 'CircleCollider' && scene.colliders[j] != this){
+                this.boxCircleCollision(this, scene.colliders[j]);
+            }
         }
     }
 
@@ -97,6 +100,33 @@ class BoxCollider extends Collider{
 
             firstCollider.parent.position = p1.add(out1);
             secondCollider.parent.position = p2.add(out2);
+        }
+    }
+
+    boxCircleCollision(firstCollider, secondCollider){
+        let p1 = secondCollider.parent.position;
+        let p2 = firstCollider.parent.position;
+
+        let width = firstCollider.width;
+        let height = firstCollider.height;
+        let radius = secondCollider.radius;
+
+        // which edge is closest?
+        let test = new Vector(p2.x, p2.y);
+        if (p1.x < p2.x - width/2)       test.x = p2.x - width/2;
+        else if (p1.x > p2.x + width/2)  test.x = p2.x + width/2;
+        if (p2.y < p2.y - height/2)      test.y = p2.y - height/2;
+        else if (p2.y > p2.y + height/2) test.y = p2.y + height/2;
+
+        // get distance from closest edges
+        let distance = new Vector(p1.x-test.x, p1.y-test.y).magnitude;
+
+        if(
+            distance <= radius &&
+            !(firstCollider.static && secondCollider.static) &&
+            this.canCollide(firstCollider, secondCollider)
+        ){
+            // We have a collision!
         }
     }
 

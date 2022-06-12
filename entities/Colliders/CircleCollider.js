@@ -23,7 +23,7 @@ class CircleCollider extends Collider{
         for(let j = startIndex; j < scene.colliders.length; j++){ 
             if((this.isTrigger || scene.colliders[j].isTrigger) && scene.colliders[j] != this){
                 // Here I handle trigger collisions
-                if(scene.colliders[j].type == 'CircleCollider'){
+                if(scene.colliders[j].type == 'BoxCollider'){
                     this.circleBoxTriggerCollision(this, scene.colliders[j]);
                 }
             }
@@ -63,6 +63,31 @@ class CircleCollider extends Collider{
     }
 
     circleBoxCollision(firstCollider, secondCollider){
-        // Do nothing!
+        let p1 = firstCollider.parent.position;
+        let p2 = secondCollider.parent.position;
+
+        let width = secondCollider.width;
+        let height = secondCollider.height;
+        let radius = firstCollider.radius;
+
+        // which edge is closest?
+        let test = new Vector(p2.x, p2.y);
+        if (p1.x < p2.x - width/2)       test.x = p2.x - width/2;
+        else if (p1.x > p2.x + width/2)  test.x = p2.x + width/2;
+        if (p2.y < p2.y - height/2)      test.y = p2.y - height/2;
+        else if (p2.y > p2.y + height/2) test.y = p2.y + height/2;
+
+        // get distance from closest edges
+        let distance = new Vector(p1.x-test.x, p1.y-test.y).magnitude;
+
+        if(
+            distance <= radius &&
+            !(firstCollider.static && secondCollider.static) &&
+            this.canCollide(firstCollider, secondCollider)
+        ){
+            // We have a collision!
+            let m1 = firstCollider.mass;
+            let m2 = secondCollider.mass;
+        }
     }
 }
