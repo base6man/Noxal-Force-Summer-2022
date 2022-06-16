@@ -24,7 +24,7 @@ class Scene{
         this.player = new Player(0, -250);
         this.bossManager = new BossManager();
         
-        this.mainCamera = new MainCamera(0, -this.textBoxHeight/2, width, height - this.textBoxHeight*pixelSize);
+        this.mainCamera = new MainCamera(0, 0, width, height);
         this.floor = new RandFloorTile(floorImage);
     
         //new Wall(0, 180, 500, 200);
@@ -32,12 +32,12 @@ class Scene{
         //new Wall(0, -180, 500, 200);
         //new Wall(-250, 0, 200, 560);
 
-        new Wall(new Vector(-1000, -80),    new Vector(-20, -1000));
-        new Wall(new Vector(1000, -80),    new Vector(20, -1000));
-        new Wall(new Vector(150, -1000),   new Vector(1000, 1000));
-        new Wall(new Vector(-20, 1000), new Vector(-1000, 80));
-        new Wall(new Vector(20, 1000), new Vector(1000, 80));
-        new Wall(new Vector(-1000, -1000), new Vector(-150, 1000));
+        new Wall(new Vector(-1000, -120),    new Vector(-20, -1000));
+        new Wall(new Vector(1000, -120),    new Vector(20, -1000));
+        new Wall(new Vector(200, -1000),   new Vector(1000, 1000));
+        new Wall(new Vector(-20, 1000), new Vector(-1000, 120));
+        new Wall(new Vector(20, 1000), new Vector(1000, 120));
+        new Wall(new Vector(-1000, -1000), new Vector(-200, 1000));
     }
 
     start(){
@@ -102,6 +102,7 @@ class Scene{
         }
         pop();
 
+        /*
         push();
         {
             fill('grey');
@@ -116,12 +117,13 @@ class Scene{
             text(this.quote, pixelSize*4, height - this.textBoxHeight/2*pixelSize);
         }
         pop();
+        */
         let end = new Date();
         //console.log('Time in update extras: ' + (end-start));
     }
 
     checkForGameOver(){
-        if(this.player.position.y > 90) this.gameOver = true;
+        if(this.player.position.y > 130) this.gameOver = true;
         if(this.gameOver){
             let winlose = new Transition([]);
             if(this.player.health <= 0){

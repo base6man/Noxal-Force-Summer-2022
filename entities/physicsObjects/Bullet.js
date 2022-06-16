@@ -2,7 +2,7 @@ class Bullet extends PhysicsObject{
 
     constructor(image, startingPosition, startingVelocity = new Vector(0, 0)){
 
-        super(startingPosition.x, startingPosition.y, startingVelocity.x, startingVelocity.y);
+        super(startingPosition, startingVelocity);
         this.acceleration = 0;
         this.homing = 0;
         this.target = scene.player;

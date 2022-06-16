@@ -7,7 +7,7 @@ class Player extends PhysicsObject{
 
     constructor(x, y){
 
-        super(x, y);
+        super(new Vector(x, y));
         this.collider = new BoxCollider(this, 0, 0, 5, 5);
         this.collider.layer = 'player';
         this.name = 'player';
@@ -31,7 +31,7 @@ class Player extends PhysicsObject{
 
         this.friction = 10;
         this.speed = this.runSpeed;
-        this.direction = 'right';
+        this.direction = 'up';
 
         this.health = 3;
         this.knockbackSpeed = 10;
@@ -148,6 +148,8 @@ class Player extends PhysicsObject{
             this.canAttack = false;
             time.delayedFunction(this, 'endAttack', this.attackDuration);
             time.delayedFunction(this, 'attackCooldown', this.attackCooldownTime);
+
+            scene.mainCamera.createShake(0.5);
         }
     }
 
@@ -168,6 +170,28 @@ class Player extends PhysicsObject{
         this.canAttack = true;
     }
 
+
+    teleport(){
+        if(!this.teleporting && this.ghostKeysPressed()){
+            this.teleporting = true;
+            this.ghost = new Ghost(this.position, this.velocity);
+        }
+        else if (this.teleporting && !this.ghostKeysPressed()){
+            this.teleporting = false;
+
+            this.position = this.ghost.position;
+            this.velocity = this.ghost.velocity.copy();
+            this.velocity.magnitude = this.endTeleportSpeed * this.speedMult;
+
+            this.ghost.delete();
+            this.ghost = null;
+            this.attack();
+        }
+    }
+
+    ghostKeysPressed(){
+        return KeyReader.j  || KeyReader.k || KeyReader.l || KeyReader.i;
+    }
 
     updateVelocity(){
         let input = new Vector(0, 0);
@@ -215,28 +239,6 @@ class Player extends PhysicsObject{
 
     }
 
-    teleport(){
-        if(!this.teleporting && this.ghostKeysPressed()){
-            this.teleporting = true;
-            this.ghost = new Ghost(this.position, this.velocity);
-        }
-        else if (this.teleporting && !this.ghostKeysPressed()){
-            this.teleporting = false;
-
-            this.position = this.ghost.position;
-            this.velocity = this.ghost.velocity.copy();
-            this.velocity.magnitude = this.endTeleportSpeed * this.speedMult;
-
-            this.ghost.delete();
-            this.ghost = null;
-            this.attack();
-        }
-    }
-
-    ghostKeysPressed(){
-        return KeyReader.j  || KeyReader.k || KeyReader.l || KeyReader.i;
-    }
-
     endInvincibility(){
         this.invincible = false;
     }
@@ -249,7 +251,10 @@ class Player extends PhysicsObject{
 
         if(other.collider.layer == 'enemyAttack'){
 
+
             if(!this.invincible){
+                scene.mainCamera.createShake();
+                
                 this.health -= 1;
                 this.invincible = true;
                 this.knockedback = true;
@@ -264,16 +269,16 @@ class Player extends PhysicsObject{
             knockbackVector.magnitude = this.knockbackSpeed * this.speedMult;
 
             this.velocity = knockbackVector;
+
         }
         else if (other.collider.layer == 'blueBullet'){
 
             let knockbackVector = this.position.subtract(other.position);
-            knockbackVector.magnitude = this.knockbackSpeed * this.speedMult / 2;
+            knockbackVector.magnitude = this.knockbackSpeed * this.speedMult / 4;
             this.velocity = knockbackVector;
             
             this.knockedback = true;
             time.delayedFunction(this, 'endKnockback', this.knockbackTime);
-            console.log('has been hit.');
         }
     }
 }

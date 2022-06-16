@@ -1,6 +1,6 @@
 class Ghost extends PhysicsObject{
     constructor(startingPosition, startingVelocity){
-        super(startingPosition.x, startingPosition.y, startingVelocity.x, startingVelocity.y);
+        super(startingPosition, startingVelocity);
         this.speed = 400;
         this.speedLoss = 3;
         this.friction = 10;

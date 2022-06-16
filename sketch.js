@@ -156,10 +156,8 @@ function updateSong(){
   if(!currentSong.isPlaying()){
     if(oldSong) oldSong.stop();
     currentSong.loop();
-    console.log('playing song!');
+    currentSong.setVolume(0.0);
   }
-
-  console.log('current song: ' + currentSong);
 }
 
 function killScene(newTransition = new Transition([])){

@@ -1,14 +1,11 @@
 class PhysicsObject{
     /**
-     * 
-     * @param {Number} x Starting X Position
-     * @param {Number} y Starting Y Position
-     * @param {Number} vx Starting X Velocity
-     * @param {Number} vy Starting Y Velocity
+     * @param {Vector} startingPosition
+     * @param {Vector} startingVelocity
      */
-    constructor(x, y, vx = 0, vy = 0){
-        this.position = new Vector(x, y);
-        this.velocity = new Vector(vx, vy);
+    constructor(startingPosition, startingVelocity = new Vector(0, 0)){
+        this.position = startingPosition.copy();
+        this.velocity = startingVelocity.copy();
     }
 
     update(){

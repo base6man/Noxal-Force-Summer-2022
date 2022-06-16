@@ -7,7 +7,7 @@ class Wall extends PhysicsObject{
     constructor(firstCorner, secondCorner){
         let x = (firstCorner.x + secondCorner.x)/2;
         let y = (firstCorner.y + secondCorner.y)/2;
-        super(x, y);
+        super(new Vector(x, y));
 
         this.width = Math.abs(secondCorner.x - firstCorner.x);
         this.height = Math.abs(secondCorner.y - firstCorner.y);
