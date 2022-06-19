@@ -3,22 +3,21 @@ class Soldier extends Boss{
         super(arenaCenter, arenaSize);
 
         this.runSpeed = 8;
-        this.dashAttackSpeed = 10;
+        this.dashAttackSpeed = 30;
         this.sidestepSpeed = 25;
 
         this.difficulty =     difficulty;
         this.agressiveness =  this.difficulty;
         this.attackPower =    1 + (this.difficulty-1)/3;
         this.shootSpeed =     this.runSpeed * (this.difficulty-1)/5;
-        this.localspeedMult = 1 + (this.difficulty-1)/6;
+        this.localSpeedMult = 1 + (this.difficulty-1)/6;
         this.dodgePower =     1 + (this.difficulty-1)/3;
 
         this.normalMinDistance = 0;
         this.normalMaxDistance = 100;
         this.minDistance = this.normalMinDistance;
         this.maxDistance = this.normalMaxDistance;
-        
-        this.speedMult *= this.localspeedMult;
+
         this.speed = this.runSpeed;
         this.normalFriction = 3;
         this.friction = this.normalFriction;

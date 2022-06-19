@@ -17,9 +17,11 @@ let collisionSteps = 5;
 
 let pixelSize = 5;
 
-let difficulty = 1;
+let difficulty = 5;
+
 let songs;
 let currentSong;
+let soundVolume = 0.0;
 
 let layerMap = [
   {a: 'default', b: 'default'},
@@ -156,7 +158,7 @@ function updateSong(){
   if(!currentSong.isPlaying()){
     if(oldSong) oldSong.stop();
     currentSong.loop();
-    currentSong.setVolume(1.0);
+    currentSong.setVolume(soundVolume);
   }
 }
 

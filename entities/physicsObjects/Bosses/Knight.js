@@ -3,12 +3,13 @@ class Knight extends Boss{
         super(arenaCenter, arenaSize);
 
         this.runSpeed = 3;
+        this.dashAttackSpeed = 10;
 
         this.difficulty =     difficulty;
         this.agressiveness =  this.difficulty;
         this.attackPower =    1 + (this.difficulty-1)/3;
         this.shootSpeed =     this.runSpeed * (this.difficulty-1)/5;
-        this.localspeedMult = 1 + (this.difficulty-1)/6;
+        this.localSpeedMult = 1 + (this.difficulty-1)/6;
         this.dodgePower =     1 + (this.difficulty-1)/3;
         
         this.normalMinDistance = 70;
@@ -16,7 +17,6 @@ class Knight extends Boss{
         this.minDistance = this.normalMinDistance;
         this.maxDistance = this.normalMaxDistance;
 
-        this.speedMult *= this.localspeedMult;
         this.speed = this.runSpeed;
         this.normalFriction = 14;
         this.friction = this.normalFriction;
@@ -39,7 +39,8 @@ class Knight extends Boss{
 
         this.attackList = [
             {name: 'dodge', difficulty: 0},
-            {name: 'circleShield', difficulty: 0}
+            {name: 'circleShield', difficulty: 0},
+            {name: 'dashAttack', difficulty: 1}
         ];
 
         this.comboList = 
@@ -52,7 +53,7 @@ class Knight extends Boss{
 
             ],
             [
-
+                {firstAttack: 'idle', nextAttack: 'dashAttack', windup: 0.8},
             ]
         ];
     }
@@ -93,10 +94,13 @@ class Knight extends Boss{
     updateShieldBullet(){
         let moveSpeed = 2*PI * time.deltaTime / this.timeForShieldToMakeFullCircle;
 
-        let lowerValue = this.angleToPlayer;
+        let lowerValue;
+        if(this.doingMeleeAttack){ lowerValue = this.angleToPlayer + PI; }
+        else{ lowerValue = this.angleToPlayer; }
+
         if(lowerValue < 0) lowerValue += 2*PI;
         console.assert(lowerValue + 2*PI > this.shieldBulletPosition, lowerValue, this.shieldBulletPosition);
-        if(lowerValue > this.shieldBulletPosition) lowerValue -= 2*PI;
+        while(lowerValue > this.shieldBulletPosition) lowerValue -= 2*PI;
 
         if(Math.abs(this.shieldBulletPosition - this.angleToPlayer) < moveSpeed || Math.abs(this.shieldBulletPosition + 2*PI - this.angleToPlayer) < moveSpeed) {
             this.shieldBulletPosition = this.angleToPlayer; 

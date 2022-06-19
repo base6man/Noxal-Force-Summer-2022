@@ -9,7 +9,7 @@ class Guard extends Boss{
         this.agressiveness =  this.difficulty;
         this.attackPower =    1 + (this.difficulty-1)/3;
         this.shootSpeed =     this.runSpeed * (this.difficulty-1)/5;
-        this.localspeedMult = 1 + (this.difficulty-1)/6;
+        this.localSpeedMult = 1 + (this.difficulty-1)/6;
         this.dodgePower =     1 + (this.difficulty-1)/3;
         
         this.normalMinDistance = 70;
@@ -17,7 +17,6 @@ class Guard extends Boss{
         this.minDistance = this.normalMinDistance;
         this.maxDistance = this.normalMaxDistance;
 
-        this.speedMult *= this.localspeedMult;
         this.speed = this.runSpeed;
         this.normalFriction = 2;
         this.friction = this.normalFriction;

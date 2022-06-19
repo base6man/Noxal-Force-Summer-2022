@@ -11,6 +11,8 @@ class Boss extends PhysicsObject{
         this.name = 'boss';
 
         this.runSpeed;
+        this.strafeSpeed;
+        this.dashAttackSpeed;
 
         this.normalMinDistance;
         this.normalMaxDistance;
@@ -99,6 +101,8 @@ class Boss extends PhysicsObject{
         this.createAnimations();
 
         this.isFirstFrame = true;
+
+        this.meleeAttacks = ['dashAttack', 'shortDashAttack', 'longDashAttack']
     }
 
     setAttacks(attackList){
@@ -299,7 +303,7 @@ class Boss extends PhysicsObject{
     }
 
     get dodgeSpeed(){
-        return this.dodgeDist / this.dodgeTime / this.speedMult;
+        return this.dodgeDist / this.dodgeTime / this.speedMult / this.localSpeedMult;
     }
 
     get comboCounter(){
@@ -349,8 +353,21 @@ class Boss extends PhysicsObject{
     }
 
     set speed(_speed){
-        this.maxSpeed = _speed * this.speedMult;
+        this.maxSpeed = _speed * this.speedMult * this.localSpeedMult;
         this.velocity.magnitude = this.speed;
+    }
+
+    set trueSpeed(_speed){
+        this.maxSpeed = _speed;
+        this.velocity.magnitude = this.speed;
+    }
+
+    get doingMeleeAttack(){
+        let whatToReturn = false;
+        for(let i of this.meleeAttacks){
+            if(this.attackName = i) whatToReturn = true;
+        }
+        return whatToReturn;
     }
 
     shootBullet(angle, speed, offset = 0, canDodgeOut = true){
@@ -764,7 +781,7 @@ class Boss extends PhysicsObject{
 
     delay_dashAttack(){ this.dashAttack(); }
     dashAttack(lookAhead = 0.4){
-        this.speed = this.dashAttackSpeed;
+        this.trueSpeed = this.dashAttackSpeed * this.speedMult;  // Sets actual speed (so localSpeedMult isn't factored in)
         let dashTime = this.distanceToPlayer / this.speed;
 
         this.minDistance = 0;
