@@ -30,9 +30,9 @@ class MainCamera{
 
     update(){
         this.updateShake();
-        if(scene.bossManager.boss){
+        if(scene.bossManager.bosses.length > 0){
             let position = this.startPos;
-            this.targets = [scene.player, scene.bossManager.boss, {position}];
+            this.targets = [scene.player, {position}].concat(scene.bossManager.bosses);
         }
         else{
             this.targets = [scene.player];
@@ -94,7 +94,7 @@ class MainCamera{
 
     updateShake(){
         this.shakeVector.magnitude = (1 - 10*time.deltaTime) * this.shakeVector.magnitude;
-        this.shakeVector.angle = random(0, 2*Math.PI);
+        this.shakeVector.angle = random(0, 2*PI);
     }
 
     createShake(magnitude = 1){

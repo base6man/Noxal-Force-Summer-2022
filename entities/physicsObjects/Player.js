@@ -210,27 +210,27 @@ class Player extends PhysicsObject{
 
     findDirection(){
         let theta = Math.atan2(this.velocity.y, this.velocity.x);
-        console.assert(theta >= -Math.PI && theta <= Math.PI, theta);
+        console.assert(theta >= -PI && theta <= PI, theta);
 
-        if(theta >= Math.PI/8 && theta < Math.PI*3/8){
+        if(theta >= PI/8 && theta < PI*3/8){
             return {direction: 'up', diagonal: true};
         }
-        else if (theta >= Math.PI*3/8 && theta < Math.PI*5/8){
+        else if (theta >= PI*3/8 && theta < PI*5/8){
             return {direction: 'up', diagonal: false};
         }
-        else if (theta >= Math.PI*5/8 && theta < Math.PI*7/8){
+        else if (theta >= PI*5/8 && theta < PI*7/8){
             return {direction: 'left', diagonal: true};
         }
-        else if (theta >= -Math.PI*1/8 && theta < Math.PI*1/8){
+        else if (theta >= -PI*1/8 && theta < PI*1/8){
             return {direction: 'right', diagonal: false};
         }
-        else if (theta >= -Math.PI*3/8 && theta < -Math.PI*1/8){
+        else if (theta >= -PI*3/8 && theta < -PI*1/8){
             return {direction: 'right', diagonal: true};
         }
-        else if (theta >= -Math.PI*5/8 && theta < -Math.PI*3/8){
+        else if (theta >= -PI*5/8 && theta < -PI*3/8){
             return {direction: 'down', diagonal: false};
         }
-        else if (theta >= -Math.PI*7/8 && theta < -Math.PI*5/8){
+        else if (theta >= -PI*7/8 && theta < -PI*5/8){
             return {direction: 'down', diagonal: true};
         }
         else{

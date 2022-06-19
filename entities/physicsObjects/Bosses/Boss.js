@@ -17,14 +17,17 @@ class Boss extends PhysicsObject{
         this.minDistance;
         this.maxDistance;
 
-        this.speedMult;
+        this.speedMult = 8;
         this.speed;
         this.normalFriction;
         this.friction;
         this.clockwise = true;
         
+        this.minimumDistanceToShield = 0;
+        this.distanceToShield;
         this.minimumDistanceToDodge = 0;
         this.distanceToDodge;
+
         this.dodgeDist;
         this.dodgeTime;
         this.dodging = false;
@@ -50,6 +53,14 @@ class Boss extends PhysicsObject{
         this.attackList;
 
         this.myWall;
+        this.index = scene.bossManager.bosses.length;
+
+        this.distanceToRepel = 80;
+        this.repelForce = 1000;
+
+        this.isAllowedToSwitch = true;
+        this.timeBetweenSwitching = 0.5;
+        this.criticalTime = 2;
 
         this.normalLookAheadTime;
         this.lookAheadTime;
@@ -163,6 +174,8 @@ class Boss extends PhysicsObject{
             // Get the bullets the same relative to the boss
             this.currentBullets[i].position = this.currentBullets[i].position.add(this.position).subtract(this.positionLastFrame);
         }
+        
+        this.seeIfIShouldReverseDirections(this.criticalTime);
 
         this.positionLastFrame = this.position.copy();
     }
@@ -186,11 +199,40 @@ class Boss extends PhysicsObject{
         else{
             movementVector = this.vectorToPlayer;
         }
+        
+        movementVector.magnitude = this.speed;
+
+        for(let i of scene.bossManager.bosses){
+            if(i.position.subtract(this.position).magnitude < this.distanceToRepel && i != this){
+                movementVector = movementVector.add(this.position.subtract(i.position)).multiply(this.repelForce);
+            }
+        }
 
         movementVector.magnitude = this.speed;
 
         let newVelocity = this.velocity.addWithFriction(movementVector, frictionEffect);
         return newVelocity;
+    }
+
+    seeIfIShouldReverseDirections(criticalTime){
+        let futurePosition = this.position.add(this.velocity.multiply(criticalTime));
+        if(
+            !this.attackName && !this.isDodging &&
+            this.isAllowedToSwitch &&
+            (futurePosition.x > this.arenaRight ||
+            futurePosition.x < this.arenaLeft ||
+            futurePosition.y > this.arenaTop ||
+            futurePosition.y < this.arenaBottom)
+            ){
+                console.log('Switching!');
+                this.clockwise = !this.clockwise;
+                this.isAllowedToSwitch = false;
+                time.delayedFunction(this, 'canSwitchAgain', this.timeBetweenSwitching);
+            }
+    }
+
+    canSwitchAgain(){
+        this.isAllowedToSwitch = true;
     }
 
     updateImage(){
@@ -396,6 +438,356 @@ class Boss extends PhysicsObject{
         this.decideNextAttack('pistol');
     }
 
+    circleShieldCanExcecute(strictness = 1){
+        let xAttacksAgo = this.previousAttacks[this.previousAttacks.length - Math.floor(this.dodgePower)];
+        return (
+            this.distanceToPlayer < this.distanceToShield * strictness &&
+            this.distanceToPlayer > this.minimumDistanceToShield * strictness &&
+            (xAttacksAgo != 'circleShield' || difficulty == 0)
+        );
+    }
+
+    delay_circleShield(){ this.circleShield(); }
+    circleShield(){
+        let numShots = 16;
+        let delay = 0;
+        let shootTime = 0.02;
+        let angleInit = this.angleToPlayer - PI/2;
+        let angleChange = PI/8;
+
+        for(let i = 0; i < numShots; i++){
+            time.delayedFunction(this, 'circleShield_shootBullet', shootTime*i+delay, [angleChange*i+angleInit, 0.00001, 15]);
+        }
+        time.delayedFunction(this, 'circleShieldFinish', shootTime*numShots + delay + 0.5);
+        time.delayedFunction(this, 'circleShieldSendOut', shootTime*numShots + delay + 0.5);
+    }
+
+    circleShield_shootBullet(angle, speed, offset){
+        let myBullet = this.shootBullet(angle, speed, offset, false);
+        if(myBullet) {
+            this.currentBullets.push(myBullet);
+            myBullet.timeAlive = Infinity;
+            myBullet.melee = true;
+            myBullet.makeBlueBullet();
+        }
+    }
+
+    circleShieldSendOut(){
+        for(let i in this.currentBullets){
+            this.currentBullets[i].velocity.magnitude = 50;
+        }
+    }
+
+    circleShieldFinish(){
+        this.decideNextAttack('circleShield');
+    }
+
+    rapidCanExcecute(){
+        let previousAttack = this.previousAttacks[this.previousAttacks.length - 1];
+        return (
+            this.distanceToPlayer.between(85, 90) && 
+            this.comboCounter < 3 && previousAttack != 'rapid'
+        );
+    }
+
+    delay_rapid(){ this.rapid(); }
+    rapid(){
+        let angle = this.futureAngleToPlayer;
+        this.speed = this.shootSpeed;
+
+        let angleInit = -0.1 * this.attackPower;
+        let angleChange = 0.1 + 0.1 / this.attackPower;
+
+        let shootTime = 0.1;
+        let delay = 0.3/this.agressiveness;
+        let numShots = Math.min(Math.floor(3 * this.attackPower), 7);
+
+        for(let i = 0; i < numShots; i++){
+            time.delayedFunction(this, 'shootBullet', shootTime*i+delay, [angle + angleChange*i+angleInit, 200]);
+        }
+        time.delayedFunction(this, 'rapidFinish', shootTime*numShots + delay + this.dodgeTime);
+    }
+
+    rapidFinish(){
+        this.decideNextAttack('rapid');
+    }
+
+    quadCanExcecute(){
+        let previousAttack = this.previousAttacks[this.previousAttacks.length - 2];
+        return (
+            (this.futureAngleToPlayer % PI/2).between(0.4, PI/2 - 0.4) &&
+            this.distanceToPlayer.between(60, 110) &&
+            this.comboCounter < 4 && previousAttack != 'quad'
+        );
+    }
+
+    diagonalCanExcecute(){
+        let previousAttack = this.previousAttacks[this.previousAttacks.length - 2];
+        return (
+            (this.futureAngleToPlayer % PI/2).between(PI/4 - 0.4, PI/4 + 0.4) &&
+            this.distanceToPlayer.between(60, 110) &&
+            this.comboCounter < 4 && previousAttack != 'diagonal'
+        );
+    }
+
+    eightWayCanExcecute(){
+        return this.quadCanExcecute() || this.diagonalCanExcecute();
+    }
+    eightWay(){
+        this.quad(0, true, 'eightWay', PI/4)
+    }
+
+    diagonal(){ this.quad(PI/4), false, 'diagonal'; }
+    fastDiagonal(){ this.quad(PI/4, true, 'diagonal'); }
+    fastQuad(){ this.quad(0, true, 'quad'); }
+
+    delay_quad(){ this.quad(); }
+    quad(angleInit = 0, isFast = false, name = 'quad', angleChange = PI/2){
+        this.speed = this.shootSpeed;
+
+        let shootTime, delay;
+        if(isFast){
+            shootTime = 0.08/this.attackPower;
+            delay = 0;
+        }
+        else{
+            shootTime = 0.12/this.attackPower;
+            delay = 0.12/this.agressiveness;
+        }
+
+        // Because it should go in exactly one circle
+        let numShots = 2*PI / angleChange;
+        console.assert(Math.floor(numShots) == numShots, angleChange, numShots);
+
+        for(let i = 0; i < numShots; i++){
+            time.delayedFunction(this, 'quad_shootBullet', shootTime*i+delay, [angleChange*i+angleInit, 0.001, 5]);
+        }
+        time.delayedFunction(this, 'quadFinish', shootTime*numShots + delay, [name]);
+        time.delayedFunction(this, 'quadSendOut', shootTime*numShots + delay);
+    }
+
+    quad_shootBullet(angle, speed, offset){
+        let myBullet = this.shootBullet(angle, speed, offset)
+        if(myBullet) this.currentBullets.push(myBullet);
+    }
+
+    quadSendOut(){
+        for(let i in this.currentBullets){
+            this.currentBullets[i].velocity.magnitude = 150;
+        }
+        this.currentBullets = [];
+    }
+
+    quadFinish(name){
+        this.decideNextAttack(name);
+    }
+
+    laserCanExcecute(){
+        let previousAttack = this.previousAttacks[this.previousAttacks.length - 1];
+        return (
+            (this.position.magnitude > 120 || this.target.position.magnitude > 120) && 
+            this.comboCounter < 6.5 &&
+            this.distanceToPlayer.between(80, 110) &&
+            previousAttack != 'laser'
+        );
+    }
+
+    shortLaser(){ this.laser(0.2, 1); }
+    fastLaser(){ this.laser(0, 2); }
+    delay_laser(){ this.laser(); }
+    laser(delay = 1, duration = 2){
+        this.speed = this.shootSpeed/2;
+
+        delay = delay/this.agressiveness;
+        let shootTime = 0.04;
+        let laserDuration = duration;
+        let numShots = Math.floor(laserDuration / shootTime);
+
+        for(let i = 0; i < numShots; i++){
+            time.delayedFunction(this, 'laser_shootBullet', shootTime*i+delay);
+        }
+        time.delayedFunction(this, 'laserFinish', laserDuration + delay);
+    }
+
+    laser_shootBullet(){
+
+        let bulletVelocity = new Vector(1, 0);
+        bulletVelocity.angle = this.angleToPlayer;
+        
+        let velocityVector = this.target.velocity.copy();
+        velocityVector.magnitude = 0.05 * this.target.velocity.magnitude / (this.target.runSpeed * this.target.speedMult);
+        bulletVelocity = bulletVelocity.add(velocityVector);
+
+        let myBullet = this.shootBullet(bulletVelocity.angle, 160);
+        if(myBullet){
+            myBullet.image = bulletImage[2];
+            myBullet.timeAlive = 2;
+        }
+    }
+
+    laserFinish(){
+        this.decideNextAttack('laser');
+    }
+
+    waveCanExcecute(){
+        let xAttacksAgo = this.previousAttacks[this.previousAttacks.length - Math.floor(1*this.attackPower)];
+        return(
+            this.distanceToPlayer.between(90, 110) &&
+            this.futureDistanceToPlayer.between(80, 100) &&
+            this.comboCounter < 6.5 && 
+            xAttacksAgo != 'wave'
+        );
+    }
+
+    fastWave(){ this.wave(1.2); }
+    delay_wave(){ this.wave(); }
+    wave(delay = 1.8){
+        this.speed = 0;
+        let trueDelay = delay/this.agressiveness;
+        time.delayedFunction(this, 'waveFinish', trueDelay);
+    }
+
+    waveFinish(){
+        for(let i = 0; i < 2*PI; i += PI/40){
+            let myBullet = this.shootBullet(i, 1, 0, false);
+            if(myBullet) {
+                myBullet.image = bulletImage[2];
+                myBullet.acceleration = 200;
+                myBullet.timeAlive = 2;
+            }
+        }
+        this.decideNextAttack('wave');
+    }
+
+    strafeCanExcecute(){
+        return (
+            this.position.magnitude < 60 && 
+            this.target.position.magnitude < 60 &&
+            this.distanceToPlayer.between(50, 75) && 
+            this.comboCounter < 4);
+    }
+
+    delay_strafe(){ this.strafe(); }
+    strafe(){
+        this.speed = this.strafeSpeed;
+        this.minDistance = 0;
+        this.maxDistance = 150;
+        this.friction = 10;
+        this.clockwise = !this.clockwise;
+
+        let numShots = Math.min(Math.floor(3 * this.attackPower), 6);
+        let shootTime = 0.4 / this.localspeedMult;
+        let delay = 0.2 / this.agressiveness;
+
+        for(let i = 0; i < numShots; i++){
+            time.delayedFunction(this, 'strafe_shootBullet', shootTime*i+delay);
+        }
+        time.delayedFunction(this, 'strafeFinish', shootTime*numShots + delay);
+    }
+
+    strafe_shootBullet(){
+        let myBullet = this.shootBullet(0, 0);
+        if(myBullet){
+            myBullet.homing = 1;
+            myBullet.timeAlive = 2;
+        }
+    }
+
+    strafeFinish(){
+        this.decideNextAttack('strafe');
+    }
+
+    homingCanExcecute(){
+        let xAttacksAgo = this.previousAttacks[this.previousAttacks.length - Math.min(Math.floor(2*this.attackPower), 5)];
+        return this.distanceToPlayer > 110 && this.comboCounter < 4 && xAttacksAgo != 'homing';
+    }
+
+    delay_homing(){ this.homing(); }
+    homing(){
+        let myBullet = this.shootBullet(this.angleToPlayer + PI, 100);
+        if(myBullet){
+            myBullet.homing = 2;
+            myBullet.timeHoming = 1;
+        }
+        
+        this.decideNextAttack('homing');
+    }
+
+    sidestepCanExcecute(){
+        let xAttacksAgo = this.previousAttacks[this.previousAttacks.length - Math.floor(this.dodgePower)];
+        return (
+            this.distanceToPlayer < this.distanceToSidestep &&
+            this.distanceToPlayer > this.minimumDistanceToDodge &&
+            xAttacksAgo != 'sidestep'
+            );
+    }
+
+    delay_sidestep(){ this.sidestep(); }
+    sidestep(){
+        this.dodging = true;
+
+        this.speed = this.sidestepSpeed;
+        this.velocity = this.vectorToPlayer;
+        this.velocity.magnitude = this.speed;
+
+        if(this.clockwise){ this.velocity.angle -= PI/4; }
+        else{ this.velocity.angle += PI/4; }
+
+        this.minDistance = 0;
+        this.maxDistance = Infinity;
+        this.friction = 8;
+
+        let sidestepTime = 0.6;
+        
+        this.seeIfIShouldReverseDirections(sidestepTime);
+        time.delayedFunction(this, 'endDodge', sidestepTime);
+    }
+
+    shortDashAttackCanExcecute(){
+        return this.distanceToPlayer < this.minimumDistanceToDodge && this.comboCounter < 6;
+    }
+    dashAttackCanExcecute(){
+        return this.futureDistanceToPlayer < 100 && this.comboCounter < 6;
+    }
+    longDashAttackCanExcecute(){
+        return this.futureDistanceToPlayer > 100 && this.comboCounter < 6;
+    }
+
+    delay_longDashAttack(){ this.longDashAttack()}
+    longDashAttack(){ 
+        console.log('Hello!');
+        this.dashAttack(0.8); 
+    }
+    
+    delay_shortDashAttack(){ this.shortDashAttack(); }
+    shortDashAttack(){ this.dashAttack(0); }
+
+    delay_dashAttack(){ this.dashAttack(); }
+    dashAttack(lookAhead = 0.4){
+        this.speed = this.dashAttackSpeed;
+        let dashTime = this.distanceToPlayer / this.speed;
+
+        this.minDistance = 0;
+        this.maxDistance = 0;
+        this.friction = this.difficulty;
+        
+        this.lookAheadTime = lookAhead;
+        this.velocity = this.futureVectorToPlayer;
+        this.velocity.magnitude = this.speed;
+
+        time.delayedFunction(this, 'dashAttackFinish', dashTime);
+    }
+
+    dashAttackFinish(){
+        let myBullet = this.shootBullet(this.velocity.angle, 10, 8, false);
+        if(myBullet) {
+            myBullet.timeAlive = 0.1;
+            myBullet.melee = true;
+        }
+        this.decideNextAttack('dashAttack');
+    }
+    
+
     /*
     updateQuote(){
         if(scene.quote == this.targetQuote && this.targetQuote != ''){
@@ -460,7 +852,7 @@ class Boss extends PhysicsObject{
                 time.delayedFunction(this, 'endInvincibility', this.invinTime);
                 if(this.health <= 0){
                     this.killBoss();
-                    scene.bossManager.killBoss();
+                    scene.bossManager.killBoss(this.index);
                 }
                 else{
                     let knockbackVector = this.position.subtract(this.target.position);
@@ -487,5 +879,9 @@ class Boss extends PhysicsObject{
         time.stopFunctionsWithKeyword(this, /(shootBullet)/);
         time.stopFunctions(this, 'decideNextAttack');
         this.collider.delete();
+    }
+
+    moveDownOneIndex(){
+        this.index--;
     }
 }

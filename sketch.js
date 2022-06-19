@@ -156,7 +156,7 @@ function updateSong(){
   if(!currentSong.isPlaying()){
     if(oldSong) oldSong.stop();
     currentSong.loop();
-    currentSong.setVolume(0.0);
+    currentSong.setVolume(1.0);
   }
 }
 
