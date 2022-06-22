@@ -66,7 +66,8 @@ class Scene{
             }
         }
         let end = new Date();
-        //console.log('Time in update: ' + (end-start));
+        
+        return end-start;
     }
 
     updateImage(){
@@ -81,7 +82,7 @@ class Scene{
         for(let i in this.bullets){ this.bullets[i].updateImage(); }
 
         let end = new Date();
-        //console.log('Total: ' + (end-start), 'Floor: ' + floorTime, 'Wall: ' + wallTime, 'Player: ' + playerTime, 'Boss: ' + bossTime, 'Bullets: ' + bulletTime);
+        return end-start;
     }
 
     updateExtras(){
@@ -119,7 +120,7 @@ class Scene{
         pop();
         */
         let end = new Date();
-        //console.log('Time in update extras: ' + (end-start));
+        return end-start;
     }
 
     checkForGameOver(){

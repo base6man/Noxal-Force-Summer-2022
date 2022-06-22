@@ -17,36 +17,33 @@ let collisionSteps = 5;
 
 let pixelSize = 5;
 
-let difficulty = 5;
+let difficulty = 2;
 
 let songs;
 let currentSong;
 let soundVolume = 0.0;
 
 let layerMap = [
-  {a: 'default', b: 'default'},
   {a: 'player',  b: 'enemyAttack'},
-  {a: 'player',  b: 'default'},
+  {a: 'player',  b: 'wall'},
   {a: 'player',  b: 'blueBullet'},
   {a: 'boss',    b: 'playerAttack'},
-  {a: 'boss',    b: 'default'},
+  {a: 'boss',    b: 'wall'},
   {a: 'boss',    b: 'player'},
-  {a: 'ghost',   b: 'default'},
+  {a: 'ghost',   b: 'wall'},
   {a: 'ghost',   b: 'blueBullet'}
 ]
 
-let imageTime;
-
-Number.prototype.between = function(a, b) {
+function isBetween(num, a, b) {
   var min = Math.min.apply(Math, [a, b]);
   var max = Math.max.apply(Math, [a, b]);
-  return this > min && this < max;
+  return num > min && num < max;
 };
 
-Number.prototype.betweenInclusive = function(a, b) {
+function isBetweenInclusive(num, a, b) {
   var min = Math.min.apply(Math, [a, b]);
   var max = Math.max.apply(Math, [a, b]);
-  return this >= min && this <= max;
+  return num >= min && num <= max;
 }
 
 function includesKeyword(array, keyword){
@@ -181,8 +178,9 @@ function start(){
 function draw(){
 
   let startTime = new Date();
-  imageTime = 0;
   imageCount = 0;
+  let imageTime;
+  let updateTime;
 
   background(0);
 
@@ -192,8 +190,8 @@ function draw(){
   }
   
   if(scene){
-    scene.update();
-    scene.updateImage();
+    updateTime = scene.update();
+    imageTime = scene.updateImage();
     scene.updateExtras();
     scene.checkForGameOver();
   }
@@ -204,8 +202,7 @@ function draw(){
   }
 
   let endTime = new Date();
-  //console.log('time drawing images: ' + imageTime, 'time otherwise: ' + (endTime-startTime-imageTime));
-  //console.log(imageCount);
+  if(endTime - startTime > 100) console.log(updateTime, imageTime);
 }
 
 function drawImage(x, y, img, rotation = 'right', name = null){
@@ -273,7 +270,6 @@ function drawImage(x, y, img, rotation = 'right', name = null){
     let startTime = new Date();
     drawImageForRealThisTime(img, x5, y5);
     let endTime = new Date();
-    imageTime += endTime - startTime;
 
     pop();
   }

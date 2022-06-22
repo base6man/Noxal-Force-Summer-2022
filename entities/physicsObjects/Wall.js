@@ -14,6 +14,7 @@ class Wall extends PhysicsObject{
 
         this.collider = new BoxCollider(this, 0, 0, this.width, this.height);
         this.collider.static = true;
+        this.collider.layer = 'wall';
 
         this.canvas = new Canvas(null, this.width, this.height);
         this.canvas.name = 'wall';

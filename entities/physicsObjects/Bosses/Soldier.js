@@ -2,9 +2,9 @@ class Soldier extends Boss{
     constructor(arenaCenter, arenaSize, difficulty){
         super(arenaCenter, arenaSize);
 
-        this.runSpeed = 8;
+        this.runSpeed = 0;
         this.dashAttackSpeed = 30;
-        this.sidestepSpeed = 25;
+        this.sidestepSpeed = 15;
 
         this.difficulty =     difficulty;
         this.agressiveness =  this.difficulty;
@@ -37,14 +37,9 @@ class Soldier extends Boss{
         this.normalLookAheadTime = 0.4;
         this.lookAheadTime = this.normalLookAheadTime;
         
-        this.attackList = [
-            {name: 'dodge', difficulty: 0},
-            {name: 'sidestep', difficulty: 0},
-            {name: 'dashAttack', difficulty: 1},
-            {name: 'shortDashAttack', difficulty: 1},
-            {name: 'longDashAttack', difficulty: 1},
-            {name: 'pistol', difficulty: 1},
-            {name: 'wave', difficulty: 2}
+        this.restrictedAttacks = [
+            {name: 'wave', difficulty: 3},
+            {name: 'rapid', difficulty: 2}
         ];
 
         this.comboList = 
@@ -58,13 +53,14 @@ class Soldier extends Boss{
                 {firstAttack: 'shortDashAttack', nextAttack: 'shortDashAttack', windup: 0.5},
                 {firstAttack: 'pistol', nextAttack: 'dashAttack', windup: 0.4},
                 {firstAttack: 'pistol', nextAttack: 'wave', agression: 3, windup: 0.5},
-                {firstAttack: 'wave', nextAttack: 'longDashAttack'},
-                {firstAttack: 'wave', nextAttack: 'dashAttack'}
+                {firstAttack: 'wave', nextAttack: 'freeDashAttack'},
+                {firstAttack: 'rapid', nextAttack: 'freeDashAttack'}
             ],
             [
                 {firstAttack: 'idle', nextAttack: 'dashAttack', windup: 0.8},
                 {firstAttack: 'idle', nextAttack: 'shortDashAttack', windup: 0.5},
                 {firstAttack: 'idle', nextAttack: 'pistol', windup: 0.3},
+                {firstAttack: 'idle', nextAttack: 'rapid'},
                 {firstAttack: 'any', nextAttack: 'sidestep', agression: 0.25}
             ]
         ];
@@ -108,8 +104,16 @@ class Soldier extends Boss{
     }
 
     pistolCanExcecute(){
-        let threeAttacksAgo = this.previousAttacks[this.previousAttacks.length - 3];
-        return this.distanceToPlayer > 100 && this.comboCounter < 5 && threeAttacksAgo != 'pistol';
+        let lastAttack = this.previousAttacks[this.previousAttacks.length - 1];
+        return isBetween(this.distanceToPlayer, 90, 110) || this.distanceToPlayer > 140 && this.comboCounter < 5 && lastAttack != 'pistol';
+    }
+
+    rapidCanExcecute(){
+        return isBetween(this.distanceToPlayer, 110, 140) && this.comboCounter < 4;
+    }
+
+    rapid(){
+        super.rapid(0.05, 0.1)
     }
 
     waveCanExcecute(){

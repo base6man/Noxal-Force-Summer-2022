@@ -35,14 +35,7 @@ class Guard extends Boss{
         this.normalLookAheadTime = 1;
         this.lookAheadTime = this.normalLookAheadTime;
 
-        this.attackList = [
-            {name: 'dodge', difficulty: 0},
-            {name: 'circleShield', difficulty: 0, maxDifficulty: 0},
-            {name: 'homing', difficulty: 1},
-            {name: 'pistol', difficulty: 1},
-            {name: 'rapid', difficulty: 1},
-            {name: 'quad', difficulty: 1},
-            {name: 'diagonal', difficulty: 1},
+        this.restrictedAttacks = [
             {name: 'eightWay', difficulty: 3},
             {name: 'strafe', difficulty: 1},
             {name: 'laser', difficulty: 2},

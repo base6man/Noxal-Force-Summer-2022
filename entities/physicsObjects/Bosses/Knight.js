@@ -3,7 +3,7 @@ class Knight extends Boss{
         super(arenaCenter, arenaSize);
 
         this.runSpeed = 3;
-        this.dashAttackSpeed = 10;
+        this.dashAttackSpeed = 20;
 
         this.difficulty =     difficulty;
         this.agressiveness =  this.difficulty;
@@ -28,8 +28,9 @@ class Knight extends Boss{
         
         this.health = 3;
 
-        this.shieldBulletPosition = -PI;
+        this.shieldPosition = -PI;
         this.timeForShieldToMakeFullCircle = 0.5;
+        this.shieldOffset = 0;
         
         this.knockbackSpeed = 60;
         this.knockbackTime = 0.2;
@@ -37,19 +38,15 @@ class Knight extends Boss{
         this.normalLookAheadTime = 1;
         this.lookAheadTime = this.normalLookAheadTime;
 
-        this.attackList = [
-            {name: 'dodge', difficulty: 0},
-            {name: 'circleShield', difficulty: 0},
-            {name: 'dashAttack', difficulty: 1}
-        ];
+        this.restrictedAttacks = [];
 
         this.comboList = 
         [
             [
-                {firstAttack: 'any', nextAttack: 'dodge', agression: 0.25},
-                {firstAttack: 'any', nextAttack: 'circleShield', windup: 0.1, agression: 0.5}
+                {firstAttack: 'any', nextAttack: 'dodge', agression: 0.25}
             ],
             [
+                {firstAttack: 'any', nextAttack: 'circleShield', windup: 0.1, agression: 0.5}
 
             ],
             [
@@ -89,33 +86,45 @@ class Knight extends Boss{
     update(){
         super.update();
         this.updateShieldBullet();
+        console.log(this.isTouchingWall);
+    }
+
+    get idealShieldPosition(){
+        return this.angleToPlayer + this.shieldOffset;
+    }
+
+    offsetShield(timeOfOffset){
+        this.shieldOffset = PI;
+        time.delayedFunction(this, 'endShieldOffset', timeOfOffset);
+    }
+
+    endShieldOffset(){
+        this.shieldOffset = 0;
     }
 
     updateShieldBullet(){
         let moveSpeed = 2*PI * time.deltaTime / this.timeForShieldToMakeFullCircle;
 
-        let lowerValue;
-        if(this.doingMeleeAttack){ lowerValue = this.angleToPlayer + PI; }
-        else{ lowerValue = this.angleToPlayer; }
+        let lowerValue = this.idealShieldPosition;
 
-        if(lowerValue < 0) lowerValue += 2*PI;
-        console.assert(lowerValue + 2*PI > this.shieldBulletPosition, lowerValue, this.shieldBulletPosition);
-        while(lowerValue > this.shieldBulletPosition) lowerValue -= 2*PI;
+        // Go up, then down, so it winds up lower
+        while(lowerValue < this.shieldPosition) lowerValue += 2*PI;
+        while(lowerValue > this.shieldPosition) lowerValue -= 2*PI;
 
-        if(Math.abs(this.shieldBulletPosition - this.angleToPlayer) < moveSpeed || Math.abs(this.shieldBulletPosition + 2*PI - this.angleToPlayer) < moveSpeed) {
-            this.shieldBulletPosition = this.angleToPlayer; 
+        if(Math.abs(this.shieldPosition - this.angleToPlayer) < moveSpeed || Math.abs(this.shieldPosition + 2*PI - this.angleToPlayer) < moveSpeed) {
+            this.shieldPosition = this.idealShieldPosition; 
         }
-        else if(this.shieldBulletPosition - lowerValue < PI) {
-            this.shieldBulletPosition -= moveSpeed;
+        else if(this.shieldPosition - lowerValue < PI) {
+            this.shieldPosition -= moveSpeed;
         }
         else{ 
-            this.shieldBulletPosition += moveSpeed;
+            this.shieldPosition += moveSpeed;
         }
 
-        this.shieldBulletPosition = this.shieldBulletPosition % (2*PI);
+        this.shieldPosition = this.shieldPosition % (2*PI);
 
-        let offset = new Vector(15, 0);
-        offset.angle = this.shieldBulletPosition;
+        let offset = new Vector(10, 0);
+        offset.angle = this.shieldPosition;
 
         let myBullet = new Bullet(bulletImage[0], this.position.add(offset));
         myBullet.timeAlive = 0;
@@ -124,5 +133,10 @@ class Knight extends Boss{
 
     updateImage(){
         super.updateImage();
+    }
+
+    dashAttack(){
+        super.dashAttack();
+        this.offsetShield(this.distanceToPlayer / this.speed);
     }
 }
