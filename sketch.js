@@ -9,15 +9,16 @@ let bossIdle, bossAttack;
 let bossImages = {}
 let allImages;
 
+let lagMultiplier = 1;
 let time;
 let isFirstFrame = true;
-let globalTimescale = 0.9;
+let globalTimescale = 0.9/lagMultiplier;
 let steps = 3;
 let collisionSteps = 5;
 
 let pixelSize = 5;
 
-let difficulty = 2;
+let difficulty = 6;
 
 let songs;
 let currentSong;
@@ -51,6 +52,10 @@ function includesKeyword(array, keyword){
     if(keyword.test(array[i])) {return true; }
   }
   return false;
+}
+
+function isNumber(num){
+  return (num > 0 || num <= 0) && typeof num == 'number';
 }
 
 
@@ -176,33 +181,35 @@ function start(){
 }
 
 function draw(){
+  for(lagCount = 0; lagCount < lagMultiplier; lagCount++){
 
-  let startTime = new Date();
-  imageCount = 0;
-  let imageTime;
-  let updateTime;
-
-  background(0);
-
-  if(isFirstFrame){
-    start();
-    isFirstFrame = false;
-  }
+    let startTime = new Date();
+    imageCount = 0;
+    let imageTime;
+    let updateTime;
   
-  if(scene){
-    updateTime = scene.update();
-    imageTime = scene.updateImage();
-    scene.updateExtras();
-    scene.checkForGameOver();
+    background(0);
+  
+    if(isFirstFrame){
+      start();
+      isFirstFrame = false;
+    }
+    
+    if(scene){
+      updateTime = scene.update();
+      imageTime = scene.updateImage();
+      scene.updateExtras();
+      scene.checkForGameOver();
+    }
+    else{
+      for(let stepNum = 0; stepNum < steps; stepNum++) 
+        time.update();
+      if(transition) transition.update();
+    }
+  
+    let endTime = new Date();
+    if(endTime - startTime > 100) console.log(updateTime, imageTime);
   }
-  else{
-    for(let stepNum = 0; stepNum < steps; stepNum++) 
-      time.update();
-    if(transition) transition.update();
-  }
-
-  let endTime = new Date();
-  if(endTime - startTime > 100) console.log(updateTime, imageTime);
 }
 
 function drawImage(x, y, img, rotation = 'right', name = null){

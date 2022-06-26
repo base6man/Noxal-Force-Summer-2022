@@ -26,11 +26,6 @@ class Scene{
         
         this.mainCamera = new MainCamera(0, 0, width, height);
         this.floor = new RandFloorTile(floorImage);
-    
-        //new Wall(0, 180, 500, 200);
-        //new Wall(250, 0, 200, 560);
-        //new Wall(0, -180, 500, 200);
-        //new Wall(-250, 0, 200, 560);
 
         new Wall(new Vector(-1000, -120),    new Vector(-20, -1000));
         new Wall(new Vector(1000, -120),    new Vector(20, -1000));
@@ -75,6 +70,8 @@ class Scene{
         // Has to be in this order
         // I hate it; I would make it in a different order, but that can't happen
 
+        this.mainCamera.updateImage();
+        
         this.floor.updateImage();
         for(let i in this.walls){ this.walls[i].updateImage(); }
         this.player.updateImage();
@@ -102,23 +99,7 @@ class Scene{
             }
         }
         pop();
-
-        /*
-        push();
-        {
-            fill('grey');
-            stroke('black');
-            strokeWeight(5);
-            rect(0, height - this.textBoxHeight*pixelSize, width, this.textBoxHeight*pixelSize);
-
-            fill('black');
-            strokeWeight(3);
-            textAlign(LEFT, CENTER);
-            textSize((this.textBoxHeight - 4)*pixelSize);
-            text(this.quote, pixelSize*4, height - this.textBoxHeight/2*pixelSize);
-        }
-        pop();
-        */
+        
         let end = new Date();
         return end-start;
     }

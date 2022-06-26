@@ -29,7 +29,6 @@ class MainCamera{
     }
 
     update(){
-        this.updateShake();
         if(scene.bossManager.bosses.length > 0){
             let position = this.startPos;
             this.targets = [scene.player, {position}].concat(scene.bossManager.bosses);
@@ -57,6 +56,10 @@ class MainCamera{
         
         // Calculations after freezing
         this.position = this.position.add(this.shakeVector);
+    }
+
+    updateImage(){
+        this.updateShake();
     }
 
     get pixelPosition(){
@@ -93,12 +96,13 @@ class MainCamera{
     }
 
     updateShake(){
-        this.shakeVector.magnitude = (1 - 10*time.deltaTime) * this.shakeVector.magnitude;
+        this.shakeVector.magnitude = (1 - 30*time.deltaTime) * this.shakeVector.magnitude;
         this.shakeVector.angle = random(0, 2*PI);
     }
 
     createShake(magnitude = 1){
         this.shakeVector = new Vector(this.shakeVector.magnitude + magnitude*this.shakeMagnitude, 0);
+        this.shakeVector.angle = random(0, 2*PI);
     }
 
     get topEdge(){

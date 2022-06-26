@@ -53,7 +53,6 @@ class Boss extends PhysicsObject{
         // Deal with this later
         this.target = scene.player;
         this.isAttacking = false;
-        this.attackName = null;
         this.comboCounter = 0;
         this.restrictedAttacks;
 
@@ -65,7 +64,7 @@ class Boss extends PhysicsObject{
 
         this.isAllowedToSwitch = true;
         this.timeBetweenSwitching = 0.1;
-        this.criticalTime = 0.3;
+        this.criticalTime = 0.6;
         this.isTouchingWall = false;
 
         this.normalLookAheadTime;
@@ -149,12 +148,12 @@ class Boss extends PhysicsObject{
     seeIfIShouldReverseDirections(criticalTime){
         let futurePosition = this.position.add(this.velocity.multiply(criticalTime));
         if(
-            !this.attackName && !this.isDodging &&
+            !this.attackManager.isAttacking &&
             this.isAllowedToSwitch &&
-            (futurePosition.x > this.arenaRight ||
-            futurePosition.x < this.arenaLeft ||
-            futurePosition.y > this.arenaTop ||
-            futurePosition.y < this.arenaBottom)
+            (futurePosition.x > this.arenaRight  - this.collider.width/2 ||
+             futurePosition.x < this.arenaLeft   + this.collider.width/2 ||
+             futurePosition.y > this.arenaTop    - this.collider.height/2 ||
+             futurePosition.y < this.arenaBottom + this.collider.height/2)
             ){
                 this.clockwise = !this.clockwise;
                 this.isAllowedToSwitch = false;
@@ -222,6 +221,7 @@ class Boss extends PhysicsObject{
     }
 
     set speed(_speed){
+        console.assert(isNumber(_speed));
         this.maxSpeed = _speed * this.speedMult * this.localSpeedMult;
         this.velocity.magnitude = this.speed;
     }
@@ -235,10 +235,10 @@ class Boss extends PhysicsObject{
         this.invincible = false;
     }
 
-    endKnockback(decideAttack = true){
+    endKnockback(){
         this.knockedback = false;
         this.velocity.magnitude = this.speed;
-        if(decideAttack){ this.attackManager.canAttack = true; }
+        this.attackManager.canAttack = true;
     }
 
     onTriggerCollision(other){
@@ -263,10 +263,10 @@ class Boss extends PhysicsObject{
                     this.velocity = knockbackVector;
                     
                     this.knockedBack = true;
-                    time.delayedFunction(this, 'endKnockback', this.knockbackTime, [this.attackName]);
+                    time.delayedFunction(this, 'endKnockback', this.knockbackTime);
 
                     this.attackManager.canAttack = false;
-                    // Should also stop the attackManager's current combo
+                    this.attackManager.stopCombo();
                 }
             }
 
@@ -287,7 +287,7 @@ class Boss extends PhysicsObject{
 
     killBoss(){
         this.attackManager.canAttack = false;
-        // Should also stop the attackManager's current combo
+        this.attackManager.stopCombo();
 
         this.collider.delete();
     }

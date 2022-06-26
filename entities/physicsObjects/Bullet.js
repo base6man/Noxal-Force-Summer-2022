@@ -53,6 +53,7 @@ class Bullet extends PhysicsObject{
 
         if(this.homing){
             let vectorToPlayer = this.target.position.subtract(this.position);
+            vectorToPlayer.magnitude = 1;
             this.velocity = this.velocity.add(vectorToPlayer.multiply(this.homing * time.deltaTime));
         }
     }
