@@ -21,7 +21,7 @@ class Scene{
     // Setup initializes variables that require operations
     setup() {
         
-        this.player = new Player(0, -250);
+        this.player = new Player(0, 0);
         this.bossManager = new BossManager();
         
         this.mainCamera = new MainCamera(0, 0, width, height);
@@ -71,7 +71,7 @@ class Scene{
         // I hate it; I would make it in a different order, but that can't happen
 
         this.mainCamera.updateImage();
-        
+
         this.floor.updateImage();
         for(let i in this.walls){ this.walls[i].updateImage(); }
         this.player.updateImage();
@@ -92,6 +92,7 @@ class Scene{
             for(let i in this.frameRateList){
                 point(this.frameRateList.length - i, this.frameRateList[i]);
             }
+            strokeWeight(1);
             line(0, 60, 250, 60);
 
             if(this.frameRateList.length > 250){
@@ -99,6 +100,7 @@ class Scene{
             }
         }
         pop();
+
         
         let end = new Date();
         return end-start;

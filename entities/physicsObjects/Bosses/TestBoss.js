@@ -3,36 +3,32 @@ class TestBoss extends Boss{
         super(arenaCenter, arenaSize);
 
         this.runSpeed = 5;
-        this.strafeSpeed = 15;
 
         this.difficulty =        difficulty;
-        this.agressiveness =     difficulty;
-        this.attackPower =       1 + (this.difficulty-1)/3;
+        this.agressiveness =     1 + (this.difficulty-1)/1;
+        this.attackPower =       1 + (this.difficulty-1)/5;
         this.shootSpeed =        this.runSpeed * (this.difficulty-1)/5;
         this.localSpeedMult =    1 + (this.difficulty-1)/6;
         this.dodgePower =        1 + (this.difficulty-1)/3;
-        this.timeBetweenCombos = Math.max(0, 1 - this.difficulty/10);
+        this.maxComboCounter =   4;
         
-        this.normalMinDistance = 50;
-        this.normalMaxDistance = 90;
+        this.normalMinDistance = 70;
+        this.normalMaxDistance = 110;
         this.minDistance = this.normalMinDistance;
         this.maxDistance = this.normalMaxDistance;
 
         this.speed = this.runSpeed;
-        this.normalFriction = 14;
+        this.normalFriction = 2;
         this.friction = this.normalFriction;
 
         this.distanceToDodge = 50 * (this.dodgePower + 4)/5;
-        this.dodgeDist = 100 * (this.dodgePower + 4)/5;
+        this.dodgeDist = 70 * (this.dodgePower + 4)/5;
         this.dodgeTime = 0.3;
         
         this.health = 3;
         
         this.knockbackSpeed = 60;
         this.knockbackTime = 0.2;
-
-        this.normalLookAheadTime = 1;
-        this.lookAheadTime = this.normalLookAheadTime;
 
         this.restrictedAttacks = [];
 
@@ -47,7 +43,7 @@ class TestBoss extends Boss{
             name: 'attack',
             animation: new Animator('attack', bossImages.attack, 0.3),
             get canRun(){
-                return this.parent.isAttacking && this.parent.previousAttacks[this.parent.previousAttacks.length - 1] != 'dodge';
+                return this.parent.attackAnimation && !this.parent.isDodging;
             }
         }
         listOfAnimations.push(attackAnimation);
@@ -58,7 +54,7 @@ class TestBoss extends Boss{
             name: 'idle',
             animation: new Animator('idle', bossImages.idle, 0.8),
             get canRun(){
-                return !this.parent.isAttacking;
+                return !this.parent.attackAnimation || this.parent.isDodging;
             }
         }
         listOfAnimations.push(idleAnimation);
@@ -69,54 +65,90 @@ class TestBoss extends Boss{
     createAttackManager(){
         
         this.attackManager = new AttackManager(this);
+        let comboList = []
 
-        let dodge = new Combo(
+        
+        comboList.push(new Combo('dodge',
         [
-            [new Dodge(this)]
-        ]);
+            [new Dodge(this, 0.1)]
+        ]));
 
-        let rapid = new Combo(
+        comboList.push(new Combo('rapid',
         [
-            [new Rapid(this)],
-            [new Strafe(this, 0.5), new Laser(this, 0.3), new Rapid(this, 0.5)]
-        ]);
+            [new Rapid(this, 0.4)],
+            [new Strafe(this, 0.8, 0, 'strafe'), new Laser(this, 1), new Rapid(this, 0.6, 1)]
+        ]));
 
-        let pistol = new Combo(
+        comboList.push(new Combo('quad',
         [
-            [new Pistol(this, 0.4, 0)]
-        ]);
+            [new Quad(this, 1, 1), new Diagonal(this, 1, 2)],
+            [new FastDiagonal(this, 0.5, 2)],
+            [new FastQuad(this, 0.5, 1)]
+        ]));
 
-        let quadCombo = new Combo(
+        comboList.push(new Combo('homing',
         [
-            [new Quad(this, 0, 1), new Diagonal(this, 0, 2)],
-            [new FastDiagonal(this, 0.1, 2)],
-            [new FastQuad(this, 0.1, 1)]
-        ]);
+            [new Homing(this, 1.2)],
+            [new Homing(this, 0.5, 1), new Strafe(this, 0.6, 0, 'strafe')]
+        ]));
 
-        let homing = new Combo(
+        comboList.push(new Combo('strafe',
         [
-            [new Homing(this, 0.4)],
-            [new Homing(this, 0.2, 1)]
-        ]);
+            [new Strafe(this, 0.8, 0), new Pistol(this, 0.6, 0, 'pistol')]
+        ]));
 
-        let waveLaser = new Combo(
+        comboList.push(new Combo('pistol',
         [
-            [new Wave(this), new Laser(this, 0, 99)],
-            [new Wave(this, 1), new Laser(this)]
-        ])
+            [new Pistol(this, 0.6, 0)]
+        ]));
 
-        this.attackManager.addComboList(
+        comboList.push(new Combo('wave',
         [
-            [dodge],
-            [rapid, pistol, quadCombo, homing, waveLaser]
-        ]);
+            [new Wave(this, 1.8, 0), new Laser(this, 0.6)]
+        ]));
+
+        comboList.push(new Combo('laser',
+        [
+            [new Laser(this, 0.8)]
+        ]));
+
+        /*
+        comboList.push(new Combo('dashAttack',
+        [
+            [new DashAttack(this, 0.8), new Pistol(this, 0.6, 0)],
+            [new ShortDashAttack(this, 0.4, 1)]
+        ]));
+        */
+
+        this.attackManager.addComboList(comboList);
+        this.attackManager.waitForSeconds(3/this.agressiveness);
     }
 
     update(){
         super.update();
+        this.teleportThroughWalls();
     }
 
     updateImage(){
         super.updateImage();
+    }
+
+    teleportThroughWalls(){
+        if(this.position.x >= this.arenaRight - this.collider.width / 2){
+            this.position.x = this.arenaLeft + this.collider.width / 2 + 1;
+            this.clockwise = !this.clockwise;
+        }
+        if(this.position.y >= this.arenaTop - this.collider.height / 2){
+            this.position.y = this.arenaBottom + this.collider.height / 2 + 1;
+            this.clockwise = !this.clockwise;
+        }
+        if(this.position.x <= this.arenaLeft + this.collider.width / 2){
+            this.position.x = this.arenaRight - this.collider.width / 2 - 1;
+            this.clockwise = !this.clockwise;
+        }
+        if(this.position.y <= this.arenaBottom + this.collider.height / 2){
+            this.position.y = this.arenaTop - this.collider.width / 2 - 1;
+            this.clockwise = !this.clockwise;
+        }
     }
 }

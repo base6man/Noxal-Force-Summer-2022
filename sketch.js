@@ -18,7 +18,7 @@ let collisionSteps = 5;
 
 let pixelSize = 5;
 
-let difficulty = 6;
+let difficulty = 1;
 
 let songs;
 let currentSong;
@@ -275,16 +275,11 @@ function drawImage(x, y, img, rotation = 'right', name = null){
     y5 = y4 - (y4 % pixelSize);
     
     let startTime = new Date();
-    drawImageForRealThisTime(img, x5, y5);
+    image(img, x5, y5);
     let endTime = new Date();
 
     pop();
   }
-}
-
-// For debug purposes, so I know that drawImage isn't taking any time
-function drawImageForRealThisTime(img, x5, y5){
-  image(img, x5, y5);
 }
 
 function keyPressed(){

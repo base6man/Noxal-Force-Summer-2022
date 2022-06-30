@@ -10,6 +10,14 @@ class Boss extends PhysicsObject{
         this.collider.layer = 'boss';
         this.name = 'boss';
 
+        this.difficulty;
+        this.agressiveness;
+        this.attackPower;
+        this.shootSpeed;
+        this.localSpeedMult;
+        this.dodgePower;
+        this.maxComboCounter;
+
         this.runSpeed;
         this.strafeSpeed;
         this.dashAttackSpeed;
@@ -52,7 +60,6 @@ class Boss extends PhysicsObject{
 
         // Deal with this later
         this.target = scene.player;
-        this.isAttacking = false;
         this.comboCounter = 0;
         this.restrictedAttacks;
 
@@ -69,8 +76,6 @@ class Boss extends PhysicsObject{
 
         this.normalLookAheadTime;
         this.lookAheadTime;
-
-        // Current bullets should be done in attack
 
         this.createAnimations();
 
@@ -148,7 +153,7 @@ class Boss extends PhysicsObject{
     seeIfIShouldReverseDirections(criticalTime){
         let futurePosition = this.position.add(this.velocity.multiply(criticalTime));
         if(
-            !this.attackManager.isAttacking &&
+            !this.isAttacking &&
             this.isAllowedToSwitch &&
             (futurePosition.x > this.arenaRight  - this.collider.width/2 ||
              futurePosition.x < this.arenaLeft   + this.collider.width/2 ||
@@ -174,7 +179,7 @@ class Boss extends PhysicsObject{
         // No late update stuff now (phew)
     }
 
-    returnToRunSpeed(){
+    finishAttack(){
         // For a delayed time function; will probably use a lot
         // Also returns lots of other variables to their normal state
         this.speed = this.runSpeed;
@@ -182,6 +187,7 @@ class Boss extends PhysicsObject{
         this.maxDistance = this.normalMaxDistance;
         this.minDistance = this.normalMinDistance;
         this.lookAheadTime = this.normalLookAheadTime;
+        this.attackAnimation = false;
     }
 
     get dodgeSpeed(){
@@ -231,6 +237,16 @@ class Boss extends PhysicsObject{
         this.velocity.magnitude = this.speed;
     }
 
+    get isAttacking(){
+        if(!this.attackManager) return false;
+        return this.attackManager.isAttacking;
+    }
+
+    get isDodging(){
+        if(!this.attackManager || !this.attackManager.currentAttack) return false;
+        return this.attackManager.currentAttack.isDodge;
+    }
+
     endInvincibility(){
         this.invincible = false;
     }
@@ -238,7 +254,6 @@ class Boss extends PhysicsObject{
     endKnockback(){
         this.knockedback = false;
         this.velocity.magnitude = this.speed;
-        this.attackManager.canAttack = true;
     }
 
     onTriggerCollision(other){
@@ -265,8 +280,8 @@ class Boss extends PhysicsObject{
                     this.knockedBack = true;
                     time.delayedFunction(this, 'endKnockback', this.knockbackTime);
 
-                    this.attackManager.canAttack = false;
-                    this.attackManager.stopCombo();
+                    this.attackAnimation = false;
+                    this.attackManager.waitForSeconds(1/this.agressiveness);
                 }
             }
 
