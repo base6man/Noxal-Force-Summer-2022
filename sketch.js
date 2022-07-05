@@ -18,11 +18,11 @@ let collisionSteps = 5;
 
 let pixelSize = 5;
 
-let difficulty = 1;
+let difficulty = 6;
 
 let songs;
 let currentSong;
-let soundVolume = 0.0;
+let soundVolume = 1.0;
 
 let layerMap = [
   {a: 'player',  b: 'enemyAttack'},
