@@ -2,8 +2,8 @@ class Soldier extends Boss{
     constructor(arenaCenter, arenaSize, difficulty){
         super(arenaCenter, arenaSize);
 
-        this.runSpeed = 0;
-        this.dashAttackSpeed = 30;
+        this.runSpeed = 2;
+        this.dashAttackSpeed = 25;
         this.sidestepSpeed = 15;
 
         this.difficulty =     difficulty;
@@ -24,7 +24,6 @@ class Soldier extends Boss{
         
         this.minimumDistanceToDodge = 20 * (this.dodgePower + 4)/5;
         this.distanceToDodge = 40 * (this.dodgePower + 4)/5;
-        this.distanceToSidestep = 80 * (this.dodgePower + 4)/5;
 
         this.dodgeDist = 60 * (this.dodgePower + 4)/5;
         this.dodgeTime = 0.3;
@@ -36,47 +35,66 @@ class Soldier extends Boss{
         
         this.normalLookAheadTime = 0.4;
         this.lookAheadTime = this.normalLookAheadTime;
-        
-        this.restrictedAttacks = [
-            {name: 'wave', difficulty: 3},
-            {name: 'rapid', difficulty: 2}
-        ];
-
-        this.comboList = 
-        [
-            [
-                {firstAttack: 'any', nextAttack: 'dodge', windup: 0.1, agression: 0.25}
-            ],
-            [
-                {firstAttack: 'dashAttack', nextAttack: 'dashAttack', windup: 0.5},
-                {firstAttack: 'dashAttack', nextAttack: 'shortDashAttack', windup: 0.5},
-                {firstAttack: 'shortDashAttack', nextAttack: 'shortDashAttack', windup: 0.5},
-                {firstAttack: 'pistol', nextAttack: 'dashAttack', windup: 0.4},
-                {firstAttack: 'pistol', nextAttack: 'wave', agression: 3, windup: 0.5},
-                {firstAttack: 'wave', nextAttack: 'freeDashAttack'},
-                {firstAttack: 'rapid', nextAttack: 'freeDashAttack'}
-            ],
-            [
-                {firstAttack: 'idle', nextAttack: 'dashAttack', windup: 0.8},
-                {firstAttack: 'idle', nextAttack: 'shortDashAttack', windup: 0.5},
-                {firstAttack: 'idle', nextAttack: 'pistol', windup: 0.3},
-                {firstAttack: 'idle', nextAttack: 'rapid'},
-                {firstAttack: 'any', nextAttack: 'sidestep', agression: 0.25}
-            ]
-        ];
-        console.log(this);
     }
 
+    createAttackManager(){
+        
+        this.attackManager = new AttackManager(this);
+        let comboList = []
+
+        
+        comboList.push(new Combo('dodge',
+        [
+            [new ShootDodge(this, 0.1)]
+        ]));
+
+        let sidestep = new Combo('sidestep',
+        [
+            [new Sidestep(this, 0.4)],
+            [new Sidestep(this, 0, 1)]
+        ]);
+        comboList.push(sidestep);
+        this.attackManager.firstCombo = sidestep;
+
+        comboList.push(new Combo('dashAttack',
+        [
+            [new DashAttack(this, 0.8)],
+            [new ShortDashAttack(this, 0.3, 1), new ShootDodge(this, 0.1), new Sidestep(this, 0.1), new Rapid(this, 0.5)]
+        ]));
+
+        comboList.push(new Combo('pistol', 
+        [
+            [new Pistol(this, 0.5, 0), new DashAttack(this, 0.6, 1, 'dashAttack')]
+        ]));
+
+        comboList.push(new Combo('wave',
+        [
+            [new Wave(this, 1.8)],
+            [new SoldierRapid(this, 1)],
+            [new LongDashAttack(this, 0.8, 1, 'dashAttack')]
+        ]));
+
+        comboList.push(new Combo('rapid',
+        [
+            [new SoldierRapid(this, 0.8)],
+            [new Wave(this, 1.5)]
+        ]))
+        
+        
+        this.attackManager.addComboList(comboList);
+        this.attackManager.waitForSeconds(3/this.agressiveness);
+    }
+    
     createAnimations(){
         let listOfAnimations = [];
 
 
         let attackAnimation = {
-            parent: this,
+            parent: this, 
             name: 'attack',
             animation: new Animator('attack', bossImages.attack, 0.3),
             get canRun(){
-                return this.parent.isAttacking && this.parent.previousAttacks[this.parent.previousAttacks.length - 1] != 'dodge';
+                return this.parent.attackAnimation && !this.parent.isDodging;
             }
         }
         listOfAnimations.push(attackAnimation);
@@ -87,7 +105,7 @@ class Soldier extends Boss{
             name: 'idle',
             animation: new Animator('idle', bossImages.idle, 0.8),
             get canRun(){
-                return !this.parent.isAttacking;
+                return !this.parent.attackAnimation || this.parent.isDodging;
             }
         }
         listOfAnimations.push(idleAnimation);
@@ -103,6 +121,7 @@ class Soldier extends Boss{
         super.updateImage();
     }
 
+    /*
     pistolCanExcecute(){
         let lastAttack = this.previousAttacks[this.previousAttacks.length - 1];
         return isBetween(this.distanceToPlayer, 90, 110) || this.distanceToPlayer > 140 && this.comboCounter < 5 && lastAttack != 'pistol';
@@ -119,4 +138,5 @@ class Soldier extends Boss{
     waveCanExcecute(){
         return this.distanceToPlayer > 100;
     }
+    */
 }

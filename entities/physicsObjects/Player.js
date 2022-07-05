@@ -16,7 +16,7 @@ class Player extends PhysicsObject{
 
         this.canDash = true;
         this.runSpeed = 1;
-        this.dashSpeed = 4;
+        this.dashSpeed = 5;
         this.stopDashSpeed = 0.3;
         this.endTeleportSpeed = 4.5;
 
@@ -24,8 +24,11 @@ class Player extends PhysicsObject{
         this.stopDashTime = 0.1;
         this.dashCooldownTime = 0.5;
 
+        this.phaseThrough = false;
+        this.teleportIFrames = 0.1;
+        this.dashIFrames = 0.2;
+
         this.canAttack = true;
-        this.attackDuration = 0.15;
         this.attackObject;
         this.attackCooldownTime = 0.25;
 
@@ -106,10 +109,17 @@ class Player extends PhysicsObject{
             this.speed = this.dashSpeed;
             this.velocity.magnitude = this.dashSpeed * this.speedMult;
             this.canDash = false;
-            time.delayedFunction(this, 'attack', this.dashTime-0.1);
+            this.phaseThrough = true;
+            
+            time.delayedFunction(this, 'stopInvincible', this.dashIFrames);
+            time.delayedFunction(this, 'attack', this.dashTime-0.2, [0.15]);
             time.delayedFunction(this, 'stopDash', this.dashTime);
             time.delayedFunction(this, 'dashCooldown', this.dashCooldownTime);
         }
+    }
+
+    stopInvincible(){
+        this.phaseThrough = false;
     }
 
     stopDash(){
@@ -134,7 +144,7 @@ class Player extends PhysicsObject{
         return this._speed;
     }
 
-    attack(){
+    attack(duration){
         if(this.canAttack){
 
             // Offset done later
@@ -146,7 +156,7 @@ class Player extends PhysicsObject{
             this.attackObject.collider.isTrigger = true;
         
             this.canAttack = false;
-            time.delayedFunction(this, 'endAttack', this.attackDuration);
+            time.delayedFunction(this, 'endAttack', duration);
             time.delayedFunction(this, 'attackCooldown', this.attackCooldownTime);
 
             scene.mainCamera.createShake(0.5);
@@ -185,7 +195,10 @@ class Player extends PhysicsObject{
 
             this.ghost.delete();
             this.ghost = null;
-            this.attack();
+            this.attack(0.15);
+
+            this.phaseThrough = true;
+            time.delayedFunction(this, 'stopInvincible', this.teleportIFrames);
         }
     }
 
@@ -249,7 +262,7 @@ class Player extends PhysicsObject{
 
     onTriggerCollision(other){
 
-        if(other.collider.layer == 'enemyAttack'){
+        if(other.collider.layer == 'enemyAttack' && !this.phaseThrough){
 
 
             if(!this.invincible){

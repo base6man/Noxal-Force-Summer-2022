@@ -21,7 +21,7 @@ class Scene{
     // Setup initializes variables that require operations
     setup() {
         
-        this.player = new Player(0, 0);
+        this.player = new Player(0, -250);
         this.bossManager = new BossManager();
         
         this.mainCamera = new MainCamera(0, 0, width, height);

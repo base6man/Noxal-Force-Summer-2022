@@ -72,7 +72,7 @@ class Bullet extends PhysicsObject{
     }
 
     onTriggerCollision(other){
-        if(other.collider.layer == 'player' || other.collider.layer == 'boss'){
+        if((other.collider.layer == 'player' || other.collider.layer == 'boss') && !other.phaseThrough){
             if(!this.melee){ this.dissapate(); }
         }
     }

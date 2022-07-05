@@ -229,17 +229,8 @@ function drawImage(x, y, img, rotation = 'right', name = null){
     x2 = x0 + (width/2 - scene.mainCamera.pixelPosition.x - img.width/2);
     y2 = y1 + (height/2 - (-scene.mainCamera.pixelPosition.y) - img.height/2);
 
-    // Scale it to the camera's zoom
-    let scaleValue = scene.mainCamera.zoom;
-    scale(scaleValue);
-
-    // p5 scaling goes toward the top left hand corner of the screen, not the middle
-    // Adjust for this
-    x3 = x2 + width/2 * (1/scaleValue - 1);
-    y3 = y2 + height/2 * (1/scaleValue - 1);
-
     // After this we get some weird rotation stuff
-    if(scene.mainCamera.isOffScreen(img, x3, y3)) {
+    if(scene.mainCamera.isOffScreen(img, x2, y2)) {
       pop();
       return;
     }
@@ -249,22 +240,22 @@ function drawImage(x, y, img, rotation = 'right', name = null){
     switch(rotation){
     case 'down':
       rotate(PI/2);
-      x4 = y3;
-      y4 = -x3-img.width;
+      x4 = y2;
+      y4 = -x2-img.width;
       break;
     case 'left':
       rotate(PI);
-      x4 = -x3-img.width;
-      y4 = -y3-img.height;
+      x4 = -x2-img.width;
+      y4 = -y2-img.height;
       break;
     case 'up':
       rotate(3*PI/2);
-      x4 = -y3-img.height;
-      y4 = x3;
+      x4 = -y2-img.height;
+      y4 = x2;
       break;
     case 'right':
-      x4 = x3;
-      y4 = y3;
+      x4 = x2;
+      y4 = y2;
       break;
     default:
       console.log('Image rotation has reached an impossible state.');

@@ -1,7 +1,8 @@
 class Ghost extends PhysicsObject{
     constructor(startingPosition, startingVelocity){
         super(startingPosition, startingVelocity);
-        this.speed = 400;
+
+        this.speed = this.calculateSpeed(0);
         this.speedLoss = 3;
         this.friction = 10;
         
@@ -13,12 +14,14 @@ class Ghost extends PhysicsObject{
         this.collider.layer = 'ghost';
         
         this.image = playerImages.idle[1];
+
+        this.startTime = time.runTime;
     }
 
     update(){
         if(!this.knockedback) this.velocity = this.updateVelocity();
         super.update();
-        if(this.speed >= 0) this.speed *= 1 - (this.speedLoss * time.deltaTime);
+        this.speed = this.calculateSpeed(time.runTime - this.startTime - 0.3);
     }
 
     updateImage(){
@@ -59,5 +62,9 @@ class Ghost extends PhysicsObject{
             this.knockedback = true;
             time.delayedFunction(this, 'endKnockback', this.knockbackTime);
         }
+    }
+
+    calculateSpeed(x){
+        return (240 / (1 + Math.exp(20*x))) + 45;
     }
 }

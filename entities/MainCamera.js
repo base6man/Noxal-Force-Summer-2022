@@ -13,7 +13,6 @@ class MainCamera{
         this.position = this.averageTargetPosition;
         this.width = width/pixelSize;
         this.height = height/pixelSize;
-        this.zoom = 1;
 
         this.offset;
         this.offsetMagnitude = 30;
@@ -106,16 +105,16 @@ class MainCamera{
     }
 
     get topEdge(){
-        return this.position.y + height / this.zoom / 2 / pixelSize;
+        return this.position.y + height / 2 / pixelSize;
     }
     get leftEdge(){
-        return this.position.x - width / this.zoom / 2 / pixelSize;
+        return this.position.x - width / 2 / pixelSize;
     }
     get rightEdge(){
-        return this.position.x + (width / this.zoom / 2 - (width - this.width*pixelSize)) / pixelSize;
+        return this.position.x + (width / 2 - (width - this.width*pixelSize)) / pixelSize;
     }
     get bottomEdge(){
-        return this.position.y - (height / this.zoom / 2 + (height - this.height*pixelSize)) / pixelSize;
+        return this.position.y - (height / 2 + (height - this.height*pixelSize)) / pixelSize;
     }
 
     isOffScreen(image, x, y){
