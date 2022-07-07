@@ -1,6 +1,6 @@
 class Bullet extends PhysicsObject{
 
-    constructor(image, startingPosition, startingVelocity = new Vector(0, 0)){
+    constructor(image, startingPosition, startingVelocity = new Vector(0, 0), canWhoosh = false){
 
         super(startingPosition, startingVelocity);
         this.acceleration = 0;
@@ -28,6 +28,15 @@ class Bullet extends PhysicsObject{
 
         this.startTime = time.runTime;
         
+        if(canWhoosh){
+            this.whoosh = whoosh;
+            this.whoosh.play();
+            time.delayedFunction(this, 'stopWhoosh', 0.5);
+        }
+    }
+
+    stopWhoosh(){
+        this.whoosh.stop();
     }
 
     makeBlueBullet(){
@@ -83,6 +92,7 @@ class Bullet extends PhysicsObject{
     }
 
     dissapate(){
+        if(this.whoosh) this.whoosh.stop();
         
         scene.bullets.splice(this.index, 1);
         this.collider.delete();

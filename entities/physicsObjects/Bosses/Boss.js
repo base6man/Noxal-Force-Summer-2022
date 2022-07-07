@@ -43,8 +43,7 @@ class Boss extends PhysicsObject{
         this.dodging = false;
 
         this.invincible = false;
-        this.health;
-        this.invinTime = 0.2;
+        this.health = 3;
 
         this.knockbackSpeed;
         this.knockbackTime;
@@ -69,6 +68,9 @@ class Boss extends PhysicsObject{
         this.distanceToRepel = 80;
         this.repelForce = 1000;
 
+        this.myBots = [];
+        this.isMainBoss = true;
+
         this.isAllowedToSwitch = true;
         this.timeBetweenSwitching = 0.1;
         this.criticalTime = 0.6;
@@ -85,9 +87,33 @@ class Boss extends PhysicsObject{
     createAttackManager(){
         this.attackManager = new AttackManager([[]]);
     }
-
+    
     createAnimations(){
-        this.animationManager = new AnimationManager([]);
+        let listOfAnimations = [];
+
+
+        let attackAnimation = {
+            parent: this, 
+            name: 'attack',
+            animation: new Animator('attack', bossImages.attack, 0.3),
+            get canRun(){
+                return this.parent.attackAnimation && !this.parent.isDodging;
+            }
+        }
+        listOfAnimations.push(attackAnimation);
+
+        
+        let idleAnimation = {
+            parent: this,
+            name: 'idle',
+            animation: new Animator('idle', bossImages.idle, 0.8),
+            get canRun(){
+                return !this.parent.attackAnimation || this.parent.isDodging;
+            }
+        }
+        listOfAnimations.push(idleAnimation);
+
+        this.animationManager = new AnimationManager(listOfAnimations);
     }
 
     update(){
@@ -95,6 +121,7 @@ class Boss extends PhysicsObject{
         if(this.isFirstFrame){
             this.createAttackManager();
             this.attackManager.balanceAttacks();
+            this.healthBar = new HealthBar(this, this.health);
 
             this.isFirstFrame = false;
         }
@@ -111,6 +138,8 @@ class Boss extends PhysicsObject{
         this.seeIfIShouldReverseDirections(this.criticalTime);
 
         this.positionLastFrame = this.position.copy();
+
+        for(let i of this.myBots) i.update();
     }
 
     updateVelocity(){
@@ -173,6 +202,8 @@ class Boss extends PhysicsObject{
     updateImage(){
         this.animationManager.update();
         this.animationManager.draw(this.position.x, this.position.y, this.direction);
+
+        for(let i of this.myBots) i.updateImage();
         
         // Right now, I'm also using this as a lateUpdate function because I'm too lazy to actually code one
         // If this comes back to bite me, hopefully I can find this comment
@@ -265,13 +296,15 @@ class Boss extends PhysicsObject{
                 scene.mainCamera.createShake();
 
                 this.health -= 1;
-                this.invincible = true;
-                time.delayedFunction(this, 'endInvincibility', this.invinTime);
+
                 if(this.health <= 0){
                     this.killBoss();
-                    scene.bossManager.killBoss(this.index);
+                    if(this.isMainBoss) scene.bossManager.killBoss(this.index);
                 }
                 else{
+                    this.invincible = true;
+                    time.delayedFunction(this, 'endInvincibility', this.healthBar.switchTime);
+
                     let knockbackVector = this.position.subtract(this.target.position);
                     knockbackVector.magnitude = this.knockbackSpeed * this.speedMult;
     
@@ -282,6 +315,8 @@ class Boss extends PhysicsObject{
 
                     this.attackAnimation = false;
                     this.attackManager.waitForSeconds(1/this.agressiveness);
+                    
+                    this.healthBar.display(this.health);
                 }
             }
 
@@ -304,7 +339,21 @@ class Boss extends PhysicsObject{
         this.attackManager.canAttack = false;
         this.attackManager.stopCombo();
 
+        this.healthBar.delete();
         this.collider.delete();
+
+        if(!this.isMainBoss){
+            this.parent.killChildBoss(this.index);
+        }
+    }
+
+    killChildBoss(index){
+
+        this.myBots.splice(index, 1);
+
+        for(let i in this.myBots){
+            this.myBots[i].index = i;
+        }
     }
 
     moveDownOneIndex(){

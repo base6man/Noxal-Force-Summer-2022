@@ -58,18 +58,18 @@ class Soldier extends Boss{
 
         comboList.push(new Combo('dashAttack',
         [
-            [new DashAttack(this, 0.8)],
+            [new FakeDashAttack(this, 0.8)],
             [new ShortDashAttack(this, 0.3, 1), new ShootDodge(this, 0.1), new Sidestep(this, 0.1), new Rapid(this, 0.5)]
         ]));
 
         comboList.push(new Combo('pistol', 
         [
-            [new Pistol(this, 0.5, 0), new DashAttack(this, 0.6, 1, 'dashAttack')]
+            [new Pistol(this, 0.5, 0), new FakeDashAttack(this, 0.6, 1, 'dashAttack')]
         ]));
 
         comboList.push(new Combo('wave',
         [
-            [new Wave(this, 1.8)],
+            [new SoldierWave(this, 1.8)],
             [new SoldierRapid(this, 1)],
             [new LongDashAttack(this, 0.8, 1, 'dashAttack')]
         ]));
@@ -77,66 +77,11 @@ class Soldier extends Boss{
         comboList.push(new Combo('rapid',
         [
             [new SoldierRapid(this, 0.8)],
-            [new Wave(this, 1.5)]
+            [new SoldierWave(this, 1.5)]
         ]))
         
         
         this.attackManager.addComboList(comboList);
         this.attackManager.waitForSeconds(3/this.agressiveness);
     }
-    
-    createAnimations(){
-        let listOfAnimations = [];
-
-
-        let attackAnimation = {
-            parent: this, 
-            name: 'attack',
-            animation: new Animator('attack', bossImages.attack, 0.3),
-            get canRun(){
-                return this.parent.attackAnimation && !this.parent.isDodging;
-            }
-        }
-        listOfAnimations.push(attackAnimation);
-
-        
-        let idleAnimation = {
-            parent: this,
-            name: 'idle',
-            animation: new Animator('idle', bossImages.idle, 0.8),
-            get canRun(){
-                return !this.parent.attackAnimation || this.parent.isDodging;
-            }
-        }
-        listOfAnimations.push(idleAnimation);
-
-        this.animationManager = new AnimationManager(listOfAnimations);
-    }
-
-    update(){
-        super.update();
-    }
-
-    updateImage(){
-        super.updateImage();
-    }
-
-    /*
-    pistolCanExcecute(){
-        let lastAttack = this.previousAttacks[this.previousAttacks.length - 1];
-        return isBetween(this.distanceToPlayer, 90, 110) || this.distanceToPlayer > 140 && this.comboCounter < 5 && lastAttack != 'pistol';
-    }
-
-    rapidCanExcecute(){
-        return isBetween(this.distanceToPlayer, 110, 140) && this.comboCounter < 4;
-    }
-
-    rapid(){
-        super.rapid(0.05, 0.1)
-    }
-
-    waveCanExcecute(){
-        return this.distanceToPlayer > 100;
-    }
-    */
 }

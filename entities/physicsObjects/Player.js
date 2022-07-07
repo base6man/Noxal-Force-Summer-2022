@@ -37,9 +37,10 @@ class Player extends PhysicsObject{
         this.direction = 'up';
 
         this.health = 3;
+        this.healthBar = new HealthBar(this, this.health);
+
         this.knockbackSpeed = 10;
         this.invincible = false;
-        this.invincibilityTime = 1;
         this.knockbackTime = 0.05;
         this.knockedback = false;
 
@@ -148,7 +149,7 @@ class Player extends PhysicsObject{
         if(this.canAttack){
 
             // Offset done later
-            this.attackObject = new Bullet(bulletImage[1], this.position);
+            this.attackObject = new Bullet(bulletImage[1], this.position, new Vector(0, 0), true);
             this.attackObject.melee = true;
             this.attackObject.makeColliderGenerous();
         
@@ -269,12 +270,18 @@ class Player extends PhysicsObject{
                 scene.mainCamera.createShake();
                 
                 this.health -= 1;
-                this.invincible = true;
-                this.knockedback = true;
-                time.delayedFunction(this, 'endInvincibility', this.invincibilityTime);
-                time.delayedFunction(this, 'endKnockback', this.knockbackTime);
+
                 if(this.health <= 0){
                     scene.gameOver = true;
+                }
+                else{
+                    this.healthBar.display(this.health);
+
+                    this.invincible = true;
+                    this.knockedback = true;
+    
+                    time.delayedFunction(this, 'endInvincibility', this.healthBar.displayTime);
+                    time.delayedFunction(this, 'endKnockback', this.knockbackTime);
                 }
             }
 

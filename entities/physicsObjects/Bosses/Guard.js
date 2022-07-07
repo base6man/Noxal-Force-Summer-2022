@@ -33,34 +33,6 @@ class Guard extends Boss{
         this.restrictedAttacks = [];
 
     }
-    
-    createAnimations(){
-        let listOfAnimations = [];
-
-
-        let attackAnimation = {
-            parent: this, 
-            name: 'attack',
-            animation: new Animator('attack', bossImages.attack, 0.3),
-            get canRun(){
-                return this.parent.attackAnimation && !this.parent.isDodging;
-            }
-        }
-        listOfAnimations.push(attackAnimation);
-
-        
-        let idleAnimation = {
-            parent: this,
-            name: 'idle',
-            animation: new Animator('idle', bossImages.idle, 0.8),
-            get canRun(){
-                return !this.parent.attackAnimation || this.parent.isDodging;
-            }
-        }
-        listOfAnimations.push(idleAnimation);
-
-        this.animationManager = new AnimationManager(listOfAnimations);
-    }
 
     createAttackManager(){
         
@@ -125,10 +97,6 @@ class Guard extends Boss{
     update(){
         super.update();
         this.teleportThroughWalls();
-    }
-
-    updateImage(){
-        super.updateImage();
     }
 
     teleportThroughWalls(){

@@ -16,6 +16,8 @@ class Scene{
         this.quote = '';
         
         this.gameOver = false;
+
+        this.otherImages = [];
     }
 
     // Setup initializes variables that require operations
@@ -77,7 +79,8 @@ class Scene{
         this.player.updateImage();
         this.bossManager.updateImage();
         for(let i in this.bullets){ this.bullets[i].updateImage(); }
-
+        for(let i in this.otherImages){ this.otherImages[i].updateImage(); }
+        
         let end = new Date();
         return end-start;
     }
@@ -114,9 +117,9 @@ class Scene{
                 winlose.addQuote('You lose.');
             }
             else{
-                winlose.addQuote('You win!');
-                winlose.addQuote('Increasing difficulty...');
                 difficulty++;
+                winlose.addQuote('You win!');
+                winlose.addQuote('Difficulty increased to ' + difficulty);
             }
             killScene(winlose);
         }

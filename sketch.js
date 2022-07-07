@@ -18,11 +18,13 @@ let collisionSteps = 5;
 
 let pixelSize = 5;
 
-let difficulty = 6;
+let difficulty = 1;
 
 let songs;
 let currentSong;
-let soundVolume = 1.0;
+let songVolume = 0.0;
+
+let whoosh;
 
 let layerMap = [
   {a: 'player',  b: 'enemyAttack'},
@@ -57,7 +59,6 @@ function includesKeyword(array, keyword){
 function isNumber(num){
   return (num > 0 || num <= 0) && typeof num == 'number';
 }
-
 
 // Preload initializes images and their relavant canvases
 function preload() {
@@ -100,6 +101,8 @@ function preload() {
     fight: loadSound("sounds/onTheTrain.wav")
   }
 
+  whoosh = loadSound("sounds/whoosh.wav");
+  whoosh.setVolume(0.4);
 }
 
 function setup(){
@@ -160,7 +163,7 @@ function updateSong(){
   if(!currentSong.isPlaying()){
     if(oldSong) oldSong.stop();
     currentSong.loop();
-    currentSong.setVolume(soundVolume);
+    currentSong.setVolume(songVolume);
   }
 }
 
