@@ -4,6 +4,7 @@ class WizardBot extends Bot{
         super(arenaCenter, arenaSize);
 
         this.runSpeed = 2;
+        this.dashAttackSpeed = 8;
 
         this.difficulty =     difficulty;
         this.agressiveness =  this.difficulty;
@@ -16,6 +17,9 @@ class WizardBot extends Bot{
         this.normalMaxDistance = 0;
         this.minDistance = this.normalMinDistance;
         this.maxDistance = this.normalMaxDistance;
+        
+        // Only for short dash attack
+        this.minimumDistanceToDodge = 15 * this.dodgePower;
 
         this.speed = this.runSpeed;
         this.normalFriction = 3;
@@ -33,6 +37,11 @@ class WizardBot extends Bot{
         comboList.push(new Combo('shield',
         [
             [new Shield(this)]
+        ]));
+
+        comboList.push(new Combo('dashAttack',
+        [
+            [new ShortDashAttack(this, 1)]
         ]));
 
         this.attackManager.addComboList(comboList);

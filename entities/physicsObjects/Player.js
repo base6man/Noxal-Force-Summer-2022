@@ -208,18 +208,31 @@ class Player extends PhysicsObject{
     }
 
     updateVelocity(){
-        let input = new Vector(0, 0);
-        if(KeyReader.w){ input.y++ }
-        if(KeyReader.s){ input.y-- }
-        if(KeyReader.d){ input.x++ }
-        if(KeyReader.a){ input.x-- }
-        input.magnitude = this.speed;
-
-        let newVelocity = new Vector(0, 0);
         let frictionEffect = time.deltaTime * this.friction;
-
-        newVelocity = this.velocity.addWithFriction(input, frictionEffect);
+        let newVelocity = this.velocity.addWithFriction(this.input, frictionEffect);
         return newVelocity;
+    }
+
+    get input(){
+        let input = new Vector(0, 0);
+        /*
+        if(gamepad){
+
+            if(buttonPressed(gamepad.buttons[1])) input.y++
+            if(buttonPressed(gamepad.buttons[3])) input.y--
+            if(buttonPressed(gamepad.buttons[4])) input.x++
+            if(buttonPressed(gamepad.buttons[2])) input.x--
+            
+        }
+        */
+
+        if(KeyReader.w) input.y++
+        if(KeyReader.s) input.y--
+        if(KeyReader.d) input.x++
+        if(KeyReader.a) input.x--
+
+        input.magnitude = this.speed;
+        return input;
     }
 
     findDirection(){

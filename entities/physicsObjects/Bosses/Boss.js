@@ -111,7 +111,7 @@ class Boss extends PhysicsObject{
         super.update();
         
         this.seeIfIShouldReverseDirections(this.criticalTime);
-        
+
         for(let i of this.myBots) i.update();
 
         this.positionLastFrame = this.position.copy();
@@ -329,6 +329,9 @@ class Boss extends PhysicsObject{
             this.parent.killChildBoss(this.index);
         }
         else if (this.isMainBoss){
+            for(let i = scene.bullets.length-1; i >= 0; i--) {
+                if(!scene.bullets[i].isPlayerAttack) scene.bullets[i].dissapate();
+            }
             for(let i of this.myBots) i.killBoss(true);
         }
     }

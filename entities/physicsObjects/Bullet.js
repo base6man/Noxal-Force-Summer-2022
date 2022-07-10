@@ -77,6 +77,10 @@ class Bullet extends PhysicsObject{
         this.myAcceleration.magnitude = _acceleration;
     }
 
+    get isPlayerAttack(){
+        return this.collider.layer == 'playerAttack';
+    }
+
     updateImage(){
         this.image.draw(this.position.x, this.position.y);
     }
