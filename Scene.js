@@ -18,6 +18,8 @@ class Scene{
         this.gameOver = false;
 
         this.otherImages = [];
+
+        this.referenceBosses = []
     }
 
     // Setup initializes variables that require operations

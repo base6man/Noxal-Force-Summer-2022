@@ -42,6 +42,7 @@ class Bullet extends PhysicsObject{
     makeBlueBullet(){
         this.collider.layer = 'blueBullet';
         this.image = bulletImage[3];
+        this.melee = true;
     }
 
     makeColliderGenerous(){

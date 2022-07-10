@@ -5,7 +5,7 @@ let bulletImage;
 let floorImages;
 let playerRunning, playerIdle, playerDiagonal;
 let playerImages = {}
-let bossIdle, bossAttack;
+let bossIdle, bossAttack, botImage;
 let bossImages = {}
 let allImages;
 
@@ -18,11 +18,11 @@ let collisionSteps = 5;
 
 let pixelSize = 5;
 
-let difficulty = 1;
+let difficulty = 2;
 
 let songs;
 let currentSong;
-let songVolume = 0.0;
+let songVolume = 1;
 
 let whoosh;
 
@@ -33,6 +33,7 @@ let layerMap = [
   {a: 'boss',    b: 'playerAttack'},
   {a: 'boss',    b: 'wall'},
   {a: 'boss',    b: 'player'},
+  {a: 'boss',    b: 'boss'},
   {a: 'ghost',   b: 'wall'},
   {a: 'ghost',   b: 'blueBullet'}
 ]
@@ -95,6 +96,9 @@ function preload() {
   bossAttack = [
     loadImage("images/bossImages/bossAttack(0).png")
   ]
+  botImage = [
+    loadImage("images/bossImages/bot(0).png")
+  ]
 
   songs = {
     intro: loadSound("sounds/fieldTheme.wav"),
@@ -109,7 +113,7 @@ function setup(){
   time = new Time();
   createCanvas(windowWidth, windowHeight - 4);
 
-  allImages = [playerRunning, playerIdle, playerDiagonal, floorImage, bulletImage, bossIdle, bossAttack];
+  allImages = [playerRunning, playerIdle, playerDiagonal, floorImage, bulletImage, bossIdle, bossAttack, botImage];
   for(let i in allImages){
     for(let j in allImages[i]){
       allImages[i][j] = new Canvas(allImages[i][j]);
@@ -124,7 +128,8 @@ function setup(){
 
   bossImages = {
     idle: bossIdle,
-    attack:bossAttack
+    attack: bossAttack,
+    bot: botImage
   }
   
   if(skipIntro){
@@ -164,6 +169,8 @@ function updateSong(){
     if(oldSong) oldSong.stop();
     currentSong.loop();
     currentSong.setVolume(songVolume);
+
+    console.log('Song')
   }
 }
 

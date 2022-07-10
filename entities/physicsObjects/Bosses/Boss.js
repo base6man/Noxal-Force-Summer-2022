@@ -10,27 +10,7 @@ class Boss extends PhysicsObject{
         this.collider.layer = 'boss';
         this.name = 'boss';
 
-        this.difficulty;
-        this.agressiveness;
-        this.attackPower;
-        this.shootSpeed;
-        this.localSpeedMult;
-        this.dodgePower;
-        this.maxComboCounter;
-
-        this.runSpeed;
-        this.strafeSpeed;
-        this.dashAttackSpeed;
-
-        this.normalMinDistance;
-        this.normalMaxDistance;
-        this.minDistance;
-        this.maxDistance;
-
         this.speedMult = 8;
-        this.speed;
-        this.normalFriction;
-        this.friction;
         this.clockwise = true;
         
         this.minimumDistanceToShield = 0;
@@ -42,7 +22,7 @@ class Boss extends PhysicsObject{
         this.dodgeTime;
         this.dodging = false;
 
-        this.invincible = false;
+        this.invincible = true;
         this.health = 3;
 
         this.knockbackSpeed;
@@ -57,19 +37,17 @@ class Boss extends PhysicsObject{
         this.arenaCenter = arenaCenter.copy();
         this.arenaSize = arenaSize.copy();
 
-        // Deal with this later
         this.target = scene.player;
-        this.comboCounter = 0;
-        this.restrictedAttacks;
 
         this.myWall;
         this.index = scene.bossManager.bosses.length;
 
-        this.distanceToRepel = 80;
-        this.repelForce = 1000;
+        this.distanceToRepel = 30;
+        this.repelForce = 10000;
 
         this.myBots = [];
         this.isMainBoss = true;
+        scene.referenceBosses.push(this);
 
         this.isAllowedToSwitch = true;
         this.timeBetweenSwitching = 0.1;
@@ -85,7 +63,8 @@ class Boss extends PhysicsObject{
     }
 
     createAttackManager(){
-        this.attackManager = new AttackManager([[]]);
+        this.attackManager = new AttackManager(this);
+        this.attackManager.addComboList([]);
     }
     
     createAnimations(){
@@ -108,7 +87,7 @@ class Boss extends PhysicsObject{
             name: 'idle',
             animation: new Animator('idle', bossImages.idle, 0.8),
             get canRun(){
-                return !this.parent.attackAnimation || this.parent.isDodging;
+                return true;
             }
         }
         listOfAnimations.push(idleAnimation);
@@ -124,22 +103,19 @@ class Boss extends PhysicsObject{
             this.healthBar = new HealthBar(this, this.health);
 
             this.isFirstFrame = false;
+            this.endInvincibility();
         }
 
         if(!this.knockedback) this.velocity = this.updateVelocity(); 
         this.attackManager.update();
         super.update();
-
-        for(let i in this.currentBullets){
-            // Get the bullets the same relative to the boss
-            this.currentBullets[i].position = this.currentBullets[i].position.add(this.position).subtract(this.positionLastFrame);
-        }
         
         this.seeIfIShouldReverseDirections(this.criticalTime);
+        
+        for(let i of this.myBots) i.update();
 
         this.positionLastFrame = this.position.copy();
 
-        for(let i of this.myBots) i.update();
     }
 
     updateVelocity(){
@@ -167,7 +143,7 @@ class Boss extends PhysicsObject{
         
         movementVector.magnitude = this.speed;
 
-        for(let i of scene.bossManager.bosses){
+        for(let i of scene.referenceBosses){
             if(i.position.subtract(this.position).magnitude < this.distanceToRepel && i != this){
                 movementVector = movementVector.add(this.position.subtract(i.position)).multiply(this.repelForce);
             }
@@ -213,6 +189,10 @@ class Boss extends PhysicsObject{
     finishAttack(){
         // For a delayed time function; will probably use a lot
         // Also returns lots of other variables to their normal state
+        this.returnToRunSpeed();
+    }
+    
+    returnToRunSpeed(){
         this.speed = this.runSpeed;
         this.friction = this.normalFriction;
         this.maxDistance = this.normalMaxDistance;
@@ -313,7 +293,7 @@ class Boss extends PhysicsObject{
                     this.knockedBack = true;
                     time.delayedFunction(this, 'endKnockback', this.knockbackTime);
 
-                    this.attackAnimation = false;
+                    this.finishAttack();
                     this.attackManager.waitForSeconds(1/this.agressiveness);
                     
                     this.healthBar.display(this.health);
@@ -335,15 +315,21 @@ class Boss extends PhysicsObject{
         this.isTouchingWall = false;
     }
 
-    killBoss(){
+    killBoss(hasKilledMainBoss = false){
+        console.log(this);
         this.attackManager.canAttack = false;
         this.attackManager.stopCombo();
 
         this.healthBar.delete();
         this.collider.delete();
 
-        if(!this.isMainBoss){
+        scene.referenceBosses.splice(scene.referenceBosses.indexOf(this), 1);
+
+        if(!this.isMainBoss && !hasKilledMainBoss){
             this.parent.killChildBoss(this.index);
+        }
+        else if (this.isMainBoss){
+            for(let i of this.myBots) i.killBoss(true);
         }
     }
 

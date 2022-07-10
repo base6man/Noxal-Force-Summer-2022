@@ -86,7 +86,6 @@ class Knight extends Boss{
     update(){
         super.update();
         this.updateShieldBullet();
-        console.log(this.isTouchingWall);
     }
 
     get idealShieldPosition(){

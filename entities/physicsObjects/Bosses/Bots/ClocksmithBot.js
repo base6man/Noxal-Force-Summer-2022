@@ -1,4 +1,4 @@
-class ArtisanBot extends Boss{
+class ClocksmithBot extends Bot{
     constructor(arenaCenter, arenaSize, difficulty){
         super(arenaCenter, arenaSize);
 
@@ -18,22 +18,14 @@ class ArtisanBot extends Boss{
         this.maxDistance = this.normalMaxDistance;
 
         this.speed = this.runSpeed;
-        this.normalFriction = 3;
+        this.normalFriction = 14;
         this.friction = this.normalFriction;
 
-        this.minimumDistanceToDodge = 30;
+        this.minimumDistanceToDodge = 25 * this.dodgePower;
         // Only for short dash attack
         
-        this.health = 1;
-        this.isMainBoss = false;
-        this.parent;
-        
-        this.normalLookAheadTime = 0.5;
+        this.normalLookAheadTime = 0.7;
         this.lookAheadTime = this.normalLookAheadTime;
-    }
-
-    setIndex(){
-        this.index = this.parent.myBots.length;
     }
 
     createAttackManager(){
@@ -53,6 +45,6 @@ class ArtisanBot extends Boss{
         ]));
         
         this.attackManager.addComboList(comboList);
-        this.attackManager.waitForSeconds(3/this.agressiveness);
+        this.attackManager.waitForSeconds(0);
     }
 }
