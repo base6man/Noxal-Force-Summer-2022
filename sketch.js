@@ -50,6 +50,7 @@ var gamepadAPI = {
     gamepadAPI.buttonsStatus = [];
     // get the gamepad object
     var c = gamepadAPI.controller || {};
+    c = navigator.getGamepads()[c.index];
   
     // loop through buttons and push the pressed ones to the array
     var pressed = [];
@@ -67,10 +68,11 @@ var gamepadAPI = {
         axes.push(c.axes[a].toFixed(2));
       }
     }
-    console.log(axes);
+    console.log(c);
     // assign received values
     gamepadAPI.axesStatus = axes;
     gamepadAPI.buttonsStatus = pressed;
+    gamepadAPI.controller = c;
     // return buttons for debugging purposes
     return pressed;
   },
