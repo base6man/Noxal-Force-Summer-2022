@@ -22,6 +22,7 @@ class Bullet extends PhysicsObject{
         this.timeAlive = 4;
         this.timeHoming = Infinity;
         this.isFirstFrame = true;
+        this.isStillAlive = true;
 
         this.index = parseInt(scene.bullets.length);
         scene.bullets.push(this);
@@ -97,6 +98,7 @@ class Bullet extends PhysicsObject{
     }
 
     dissapate(){
+        this.isStillAlive = false;
         if(this.whoosh) this.whoosh.stop();
         
         scene.bullets.splice(this.index, 1);

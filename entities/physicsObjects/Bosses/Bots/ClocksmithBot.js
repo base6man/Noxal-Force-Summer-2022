@@ -23,6 +23,8 @@ class ClocksmithBot extends Bot{
 
         this.minimumDistanceToDodge = 25 * this.dodgePower;
         // Only for short dash attack
+
+        this.repelForce = 5;
         
         this.normalLookAheadTime = 0.7;
         this.lookAheadTime = this.normalLookAheadTime;

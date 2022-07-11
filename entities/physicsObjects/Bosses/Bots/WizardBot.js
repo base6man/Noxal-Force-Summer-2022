@@ -22,7 +22,7 @@ class WizardBot extends Bot{
         this.minimumDistanceToDodge = 15 * this.dodgePower;
 
         this.speed = this.runSpeed;
-        this.normalFriction = 3;
+        this.normalFriction = 0;
         this.friction = this.normalFriction;
         
         this.normalLookAheadTime = 0.7;
@@ -39,10 +39,10 @@ class WizardBot extends Bot{
             [new Shield(this)]
         ]));
 
-        comboList.push(new Combo('dashAttack',
+        /*comboList.push(new Combo('dashAttack',
         [
             [new ShortDashAttack(this, 1)]
-        ]));
+        ]));*/
 
         this.attackManager.addComboList(comboList);
         this.attackManager.waitForSeconds(1/this.agressiveness);
@@ -50,5 +50,12 @@ class WizardBot extends Bot{
 
     update(){
         super.update();
+    }
+
+    onColliderCollision(other){
+        if(other.collider.layer == 'wall'){
+            this.health--;
+            this.killBoss();
+        }
     }
 }

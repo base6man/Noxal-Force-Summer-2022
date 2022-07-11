@@ -42,12 +42,12 @@ class Boss extends PhysicsObject{
         this.myWall;
         this.index = scene.bossManager.bosses.length;
 
-        this.distanceToRepel = 30;
-        this.repelForce = 10000;
+        this.repelForce = 20;
 
         this.myBots = [];
         this.isMainBoss = true;
         scene.referenceBosses.push(this);
+        this.focusCameraOnThis = true;
 
         this.isAllowedToSwitch = true;
         this.timeBetweenSwitching = 0.1;
@@ -141,17 +141,20 @@ class Boss extends PhysicsObject{
             movementVector = this.vectorToPlayer.multiply(-1);
         }
         
-        movementVector.magnitude = this.speed;
+        movementVector.magnitude = 1;
 
         for(let i of scene.referenceBosses){
-            if(i.position.subtract(this.position).magnitude < this.distanceToRepel && i != this){
-                movementVector = movementVector.add(this.position.subtract(i.position)).multiply(this.repelForce);
+            if(i != this){
+                let repelVector = this.position.subtract(i.position).invert().multiply(this.repelForce);
+                movementVector = movementVector.add(repelVector);
             }
         }
+        let tempVector = movementVector.copy();
 
         movementVector.magnitude = this.speed;
 
         let newVelocity = this.velocity.addWithFriction(movementVector, frictionEffect);
+        console.assert(newVelocity.isVector(), movementVector, frictionEffect, tempVector);
         return newVelocity;
     }
 
@@ -316,9 +319,7 @@ class Boss extends PhysicsObject{
     }
 
     killBoss(hasKilledMainBoss = false){
-        console.log(this);
-        this.attackManager.canAttack = false;
-        this.attackManager.stopCombo();
+        this.attackManager.kill();
 
         this.healthBar.delete();
         this.collider.delete();

@@ -92,6 +92,7 @@ class Player extends PhysicsObject{
         this.dash();
         this.teleport();
         this.update_attack();
+        this.heal();
 
         super.update();
         if(this.ghost) this.ghost.update();
@@ -106,7 +107,7 @@ class Player extends PhysicsObject{
     }
 
     dash(){
-        if(KeyReader.space && this.canDash){
+        if((KeyReader.space || gamepadAPI.buttonPressed('RT') || gamepadAPI.buttonPressed('A')) && this.canDash){
             this.speed = this.dashSpeed;
             this.velocity.magnitude = this.dashSpeed * this.speedMult;
             this.canDash = false;
@@ -144,6 +145,63 @@ class Player extends PhysicsObject{
     get speed(){
         return this._speed;
     }
+    
+    teleport(){
+        if(!this.teleporting && this.ghostKeysPressed()){
+            this.teleporting = true;
+            this.ghost = new Ghost(this.position, this.velocity);
+        }
+        else if (this.teleporting && !this.ghostKeysPressed()){
+            this.teleporting = false;
+
+            this.position = this.ghost.position;
+            this.velocity = this.ghost.velocity.copy();
+            this.velocity.magnitude = this.endTeleportSpeed * this.speedMult;
+
+            this.ghost.delete();
+            this.ghost = null;
+            this.attack(0.15);
+
+            this.phaseThrough = true;
+            time.delayedFunction(this, 'stopInvincible', this.teleportIFrames);
+        }
+    }
+
+    ghostKeysPressed(){
+        return (
+            KeyReader.j  || KeyReader.k || KeyReader.l || KeyReader.i || 
+            Math.abs(gamepadAPI.axesStatus[2]) > 0.1 || Math.abs(gamepadAPI.axesStatus[3]) > 0.1
+        );
+    }
+
+    updateVelocity(){
+        let frictionEffect = time.deltaTime * this.friction;
+        let newVelocity = this.velocity.addWithFriction(this.input, frictionEffect);
+        return newVelocity;
+    }
+
+    get input(){
+        let input= new Vector(0, 0);
+        if(gamepadAPI.connected) input = new Vector(gamepadAPI.axesStatus[0], -gamepadAPI.axesStatus[1]);
+
+        if(KeyReader.w) input.y++
+        if(KeyReader.s) input.y--
+        if(KeyReader.d) input.x++
+        if(KeyReader.a) input.x--
+
+        // Put between 1 and -1 bounds
+        input.x = Math.max(Math.min(input.x, 1), -1);
+        input.y = Math.max(Math.min(input.y, 1), -1);
+
+        let inputMagnitude = Math.min(input.magnitude, 1);
+
+        input.magnitude = this.speed * inputMagnitude;
+        return input;
+    }
+
+    heal(){
+        // Nothing for now
+    }
 
     attack(duration){
         if(this.canAttack){
@@ -179,60 +237,6 @@ class Player extends PhysicsObject{
 
     attackCooldown(){
         this.canAttack = true;
-    }
-
-
-    teleport(){
-        if(!this.teleporting && this.ghostKeysPressed()){
-            this.teleporting = true;
-            this.ghost = new Ghost(this.position, this.velocity);
-        }
-        else if (this.teleporting && !this.ghostKeysPressed()){
-            this.teleporting = false;
-
-            this.position = this.ghost.position;
-            this.velocity = this.ghost.velocity.copy();
-            this.velocity.magnitude = this.endTeleportSpeed * this.speedMult;
-
-            this.ghost.delete();
-            this.ghost = null;
-            this.attack(0.15);
-
-            this.phaseThrough = true;
-            time.delayedFunction(this, 'stopInvincible', this.teleportIFrames);
-        }
-    }
-
-    ghostKeysPressed(){
-        return KeyReader.j  || KeyReader.k || KeyReader.l || KeyReader.i;
-    }
-
-    updateVelocity(){
-        let frictionEffect = time.deltaTime * this.friction;
-        let newVelocity = this.velocity.addWithFriction(this.input, frictionEffect);
-        return newVelocity;
-    }
-
-    get input(){
-        let input = new Vector(0, 0);
-        /*
-        if(gamepad){
-
-            if(buttonPressed(gamepad.buttons[1])) input.y++
-            if(buttonPressed(gamepad.buttons[3])) input.y--
-            if(buttonPressed(gamepad.buttons[4])) input.x++
-            if(buttonPressed(gamepad.buttons[2])) input.x--
-            
-        }
-        */
-
-        if(KeyReader.w) input.y++
-        if(KeyReader.s) input.y--
-        if(KeyReader.d) input.x++
-        if(KeyReader.a) input.x--
-
-        input.magnitude = this.speed;
-        return input;
     }
 
     findDirection(){

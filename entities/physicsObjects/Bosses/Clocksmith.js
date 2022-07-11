@@ -39,7 +39,7 @@ class Clocksmith extends Boss{
 
         this.botCooldown = 10 / this.agressiveness;
 
-        this.createBots(arenaSize.y/2, 2*PI, 6, PI/6);
+        this.createBotsCircle(arenaSize.y/2, 2*PI, 6, PI/6);
 
     }
 
@@ -81,7 +81,6 @@ class Clocksmith extends Boss{
             name: 'bot',
             animation: new Animator('bot', bossImages.bot, 1),
             get canRun(){
-                console.log(this.parent.distanceToPlayer, this.parent.minDistance, this.parent.distanceToPlayer > this.parent.minDistance);
                 return this.parent.distanceToPlayer > this.parent.minDistance;
             }
         }
@@ -101,30 +100,31 @@ class Clocksmith extends Boss{
         this.animationManager = new AnimationManager(listOfAnimations);
     }
 
-    createBots(distance, angleChange, numBots, offset = 0){
+    createBotsCircle(distance, angleChange, numBots, offset = 0, startingVelocity = new Vector(0, 0)){
         let startAngle = this.angleToPlayer - angleChange/2 + offset;
 
         for(let i = 0; i < numBots; i++){
             let angle = startAngle + i*angleChange/numBots;
             
-            let newBoss = new ClocksmithBot(this.arenaCenter, this.arenaSize, this.difficulty);
+            let bot = new ClocksmithBot(this.arenaCenter, this.arenaSize, this.difficulty);
 
-            let newBossPosition = new Vector(distance, 0);
-            newBossPosition.angle = angle;
-            newBoss.position = newBossPosition.add(this.position);
+            let botPosition = new Vector(distance, 0);
+            botPosition.angle = angle;
+            bot.position = botPosition.add(this.position);
+            //bot.velocity = startingVelocity;
 
-            newBoss.parent = this;
-            newBoss.setIndex();
+            bot.parent = this;
+            bot.setIndex();
 
-            this.myBots.push(newBoss);
+            this.myBots.push(bot);
         }
 
-        time.delayedFunction(this, 'createBots', this.botCooldown, [30, PI, 3]);
+        time.delayedFunction(this, 'createBotsCircle', this.botCooldown, [30, PI, 3]);
     }
 
     killBoss(){
         super.killBoss();
-        time.stopFunctions(this, 'createBots');
+        time.stopFunctions(this, 'createBotsCircle');
     }
 
     get runSpeed(){
@@ -137,16 +137,16 @@ class Clocksmith extends Boss{
         this.healthBar.stopDisplay();
         this.teleportAway();
 
-        time.stopFunctions(this, 'createBots')
-        this.createBots(20, 2*PI, 5);
+        time.stopFunctions(this, 'createBotsCircle')
+        this.createBotsCircle(20, 2*PI, 5);
     }
 
     teleportAway(){
         this.position = this.arenaCenter;
 
-        let newVector = new Vector(this.arenaSize.y/2, 0);
+        let newVector = new Vector(this.arenaSize.y - 25, 0);
         newVector.angle = this.angleToPlayer + PI;
 
-        this.position = this.position.add(newVector);
+        this.position = this.arenaCenter.add(newVector);
     }
 }

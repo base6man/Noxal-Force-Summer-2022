@@ -9,7 +9,7 @@ class PhysicsObject{
     }
 
     update(){
-        console.assert(isNumber(this.velocity.x) && isNumber(this.velocity.y) && isNumber(this.position.x) && isNumber(this.position.y), this.position, this.velocity);
+        console.assert(this.position.isVector() && this.velocity.isVector(), this.position, this.velocity, this);
         this.position.x += this.velocity.x * time.deltaTime;
         this.position.y += this.velocity.y * time.deltaTime;
     }

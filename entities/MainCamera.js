@@ -9,13 +9,12 @@ class MainCamera{
     constructor(x, y, width, height){
         this.startPos = new Vector(x, y);
 
-        this.targets = [scene.player];
         this.position = this.averageTargetPosition;
         this.width = width/pixelSize;
         this.height = height/pixelSize;
 
         this.offset;
-        this.offsetMagnitude = 30;
+        this.offsetMagnitude = 60;
         this.speed = 2;
 
         this.freezX;
@@ -28,17 +27,11 @@ class MainCamera{
     }
 
     update(){
-        if(scene.bossManager.bosses.length > 0){
-            let position = this.startPos;
-            this.targets = [scene.player, {position}].concat(scene.bossManager.bosses);
-        }
-        else{
-            this.targets = [scene.player];
-        }
 
         if(this.targets.length == 1){
+            // The only one is the player
             this.offset = this.setOffset();
-            this.offset.magnitude = this.offsetMagnitude * this.targets[0].velocity.magnitude / this.targets[0].speed;
+            this.offset.magnitude = this.offsetMagnitude * scene.player.velocity.magnitude / scene.player.speed;
         }
         else{
             this.offset = new Vector(0, 0);
@@ -66,28 +59,43 @@ class MainCamera{
     }
 
     setOffset(){
-        if(this.targets[0].direction == 'right'){
-            if(this.targets[0].diagonal == true) { return new Vector(1, -1); }
+        if(scene.player.direction == 'right'){
+            if(scene.player.diagonal == true) { return new Vector(1, -1); }
             else{ return new Vector(1, 0); }
         }
-        else if(this.targets[0].direction == 'up'){
-            if(this.targets[0].diagonal == true) { return new Vector(1, 1); }
+        else if(scene.player.direction == 'up'){
+            if(scene.player.diagonal == true) { return new Vector(1, 1); }
             else{ return new Vector(0, 1); }
         }
-        else if(this.targets[0].direction == 'left'){
-            if(this.targets[0].diagonal == true) { return new Vector(-1, 1); }
+        else if(scene.player.direction == 'left'){
+            if(scene.player.diagonal == true) { return new Vector(-1, 1); }
             else{ return new Vector(-1, 0); }
         }
-        else if(this.targets[0].direction == 'down'){
-            if(this.targets[0].diagonal == true) { return new Vector(-1, -1); }
+        else if(scene.player.direction == 'down'){
+            if(scene.player.diagonal == true) { return new Vector(-1, -1); }
             else{ return new Vector(0, -1); }
         }
     }
 
+    get targets(){
+        let targetList = [];
+
+        for(let i of scene.referenceBosses){
+            if(i.focusCameraOnThis) targetList.push(i.position);
+        }
+
+        if(scene.referenceBosses.length > 0)
+            targetList.push(this.startPos);
+
+        targetList.push(scene.player.position);
+
+        return targetList;
+    }
+
     get averageTargetPosition(){
         let sumOfPositions = new Vector(0, 0);
-        for(let i in this.targets){
-            sumOfPositions = sumOfPositions.add(this.targets[i].position);
+        for(let i of this.targets){
+            sumOfPositions = sumOfPositions.add(i);
         }
 
         let averageTarget = sumOfPositions.divide(this.targets.length);

@@ -18,7 +18,7 @@ let collisionSteps = 5;
 
 let pixelSize = 5;
 
-let difficulty = 6;
+let difficulty = 2;
 
 let songs;
 let currentSong;
@@ -32,12 +32,11 @@ var gamepadAPI = {
   connect: function(evt) {
     gamepadAPI.controller = evt.gamepad;
     gamepadAPI.connected = true;
-    console.log('Gamepad connected.');
+    userStartAudio();
   },
   disconnect: function(evt) {
     gamepadAPI.connected = false;
     delete gamepadAPI.controller;
-    console.log('Gamepad disconnected.');
   },
   update: function() {
     // clear the buttons cache
@@ -68,7 +67,6 @@ var gamepadAPI = {
         axes.push(c.axes[a].toFixed(2));
       }
     }
-    console.log(c);
     // assign received values
     gamepadAPI.axesStatus = axes;
     gamepadAPI.buttonsStatus = pressed;
@@ -99,9 +97,11 @@ var gamepadAPI = {
     return newPress;
   },
   buttons: [
-    'DPad-Up','DPad-Down','DPad-Left','DPad-Right',
-    'Start','Back','Axis-Left','Axis-Right',
-    'LB','RB','Power','A','B','X','Y',
+    'A', 'B', 'X', 'Y',
+    'LB', 'RB', 'LT', 'RT',
+    'Start', 'Options', 
+    'L3', 'R3',
+    'Dpad_Up', 'Dpad_Down', 'Dpad_Left', 'Dpad_Right'
   ],
   buttonsCache: [],
   buttonsStatus: [],
@@ -118,7 +118,6 @@ let layerMap = [
   {a: 'boss',    b: 'playerAttack'},
   {a: 'boss',    b: 'wall'},
   {a: 'boss',    b: 'player'},
-  {a: 'boss',    b: 'boss'},
   {a: 'ghost',   b: 'wall'},
   {a: 'ghost',   b: 'blueBullet'}
 ]
@@ -144,6 +143,10 @@ function includesKeyword(array, keyword){
 
 function isNumber(num){
   return (num > 0 || num <= 0) && typeof num == 'number';
+}
+
+function isRealNumber(num){
+  return typeof num == 'number' && (num < 0 || num >= 0) && (num != Infinity || num != -Infinity);
 }
 
 // Preload initializes images and their relavant canvases
@@ -254,8 +257,6 @@ function updateSong(){
     if(oldSong) oldSong.stop();
     currentSong.loop();
     currentSong.setVolume(songVolume);
-
-    console.log('Song')
   }
 }
 
@@ -279,7 +280,6 @@ function draw(){
 
   if(gamepadAPI.connected){
     gamepadAPI.update();
-    if(gamepadAPI.buttonPressed('DPad-Up', 'hold')) console.log('A!');
   }
 
   for(lagCount = 0; lagCount < lagMultiplier; lagCount++){

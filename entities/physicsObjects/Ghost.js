@@ -29,19 +29,28 @@ class Ghost extends PhysicsObject{
     }
 
     updateVelocity(){
-        let input = new Vector(0, 0);
-        if(KeyReader.i){ input.y++ }
-        if(KeyReader.k){ input.y-- }
-        if(KeyReader.l){ input.x++ }
-        if(KeyReader.j){ input.x-- }
-        
-        input.magnitude = this.speed;
-
-        let newVelocity = new Vector(0, 0);
         let frictionEffect = time.deltaTime * this.friction;
-
-        newVelocity = this.velocity.addWithFriction(input, frictionEffect);
+        let newVelocity = this.velocity.addWithFriction(this.input, frictionEffect);
         return newVelocity;
+    }
+
+    get input(){
+        let input= new Vector(0, 0);
+        if(gamepadAPI.connected) input = new Vector(gamepadAPI.axesStatus[2], -gamepadAPI.axesStatus[3]);
+
+        if(KeyReader.i) input.y++
+        if(KeyReader.k) input.y--
+        if(KeyReader.l) input.x++
+        if(KeyReader.j) input.x--
+
+        // Put between 1 and -1 bounds
+        input.x = Math.max(Math.min(input.x, 1), -1);
+        input.y = Math.max(Math.min(input.y, 1), -1);
+
+        let inputMagnitude = Math.min(input.magnitude, 1);
+
+        input.magnitude = this.speed * inputMagnitude;
+        return input;
     }
 
     delete(){
