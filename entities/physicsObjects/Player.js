@@ -34,7 +34,6 @@ class Player extends PhysicsObject{
 
         this.friction = 10;
         this.speed = this.runSpeed;
-        this.direction = 'up';
 
         this.health = 3;
         this.healthBar = new HealthBar(this, this.health);
@@ -54,28 +53,31 @@ class Player extends PhysicsObject{
         let listOfAnimations = [];
 
         let idleAnimation = {
+            parent: this,
             name: 'idle',
             animation: new Animator('idle', playerImages.idle, 0.8),
             get canRun(){
-                return scene.player.velocity.sqrMagnitude < 1;
+                return this.parent.velocity.sqrMagnitude < 1;
             }
         }
         listOfAnimations.push(idleAnimation);
 
         let runningAnimation = {
+            parent: this,
             name: 'running',
             animation: new Animator('running', playerImages.running, 0.3),
             get canRun(){
-                return scene.player.velocity.sqrMagnitude > 1 && !scene.player.diagonal;
+                return this.parent.velocity.sqrMagnitude > 1 && !this.parent.diagonal;
             }
         }
         listOfAnimations.push(runningAnimation);
 
         let diagonalAnimation = {
+            parent: this,
             name: 'diagonal',
             animation: new Animator('diagonal', playerImages.diagonal, 0.3),
             get canRun(){
-                return scene.player.velocity.sqrMagnitude > 1 && scene.player.diagonal;
+                return this.parent.velocity.sqrMagnitude > 1 && this.parent.diagonal;
             }
         }
         listOfAnimations.push(diagonalAnimation);
@@ -85,9 +87,6 @@ class Player extends PhysicsObject{
 
     update(){
         if(!this.knockedback){ this.velocity = this.updateVelocity(); }
-
-        this.direction = this.findDirection().direction;
-        this.diagonal = this.findDirection().diagonal;
 
         this.dash();
         this.teleport();
@@ -207,9 +206,9 @@ class Player extends PhysicsObject{
         if(this.canAttack){
 
             // Offset done later
-            this.attackObject = new Bullet(bulletImage[1], this.position, new Vector(0, 0), true);
+            this.attackObject = new Bullet(7.5, this.position, new Vector(0, 0), true);
             this.attackObject.melee = true;
-            this.attackObject.makeColliderGenerous();
+            this.attackObject.rotationTarget = this;
         
             this.attackObject.collider.layer = 'playerAttack';
             this.attackObject.collider.isTrigger = true;
@@ -239,37 +238,6 @@ class Player extends PhysicsObject{
         this.canAttack = true;
     }
 
-    findDirection(){
-        let theta = Math.atan2(this.velocity.y, this.velocity.x);
-        console.assert(theta >= -PI && theta <= PI, theta);
-
-        if(theta >= PI/8 && theta < PI*3/8){
-            return {direction: 'up', diagonal: true};
-        }
-        else if (theta >= PI*3/8 && theta < PI*5/8){
-            return {direction: 'up', diagonal: false};
-        }
-        else if (theta >= PI*5/8 && theta < PI*7/8){
-            return {direction: 'left', diagonal: true};
-        }
-        else if (theta >= -PI*1/8 && theta < PI*1/8){
-            return {direction: 'right', diagonal: false};
-        }
-        else if (theta >= -PI*3/8 && theta < -PI*1/8){
-            return {direction: 'right', diagonal: true};
-        }
-        else if (theta >= -PI*5/8 && theta < -PI*3/8){
-            return {direction: 'down', diagonal: false};
-        }
-        else if (theta >= -PI*7/8 && theta < -PI*5/8){
-            return {direction: 'down', diagonal: true};
-        }
-        else{
-            return {direction: 'left', diagonal: false};
-        }
-
-    }
-
     endInvincibility(){
         this.invincible = false;
     }
@@ -282,9 +250,9 @@ class Player extends PhysicsObject{
 
         if(other.collider.layer == 'enemyAttack' && !this.phaseThrough){
 
+            scene.mainCamera.createShake();
 
             if(!this.invincible){
-                scene.mainCamera.createShake();
                 
                 this.health -= 1;
 
@@ -292,6 +260,9 @@ class Player extends PhysicsObject{
                     scene.gameOver = true;
                 }
                 else{
+                    scene.mainCamera.createShake(2);
+                    time.hitStop(0.04);
+
                     this.healthBar.display(this.health);
 
                     this.invincible = true;
@@ -309,6 +280,7 @@ class Player extends PhysicsObject{
 
         }
         else if (other.collider.layer == 'blueBullet'){
+            scene.mainCamera.createShake();
 
             let knockbackVector = this.position.subtract(other.position);
             knockbackVector.magnitude = this.knockbackSpeed * this.speedMult / 4;

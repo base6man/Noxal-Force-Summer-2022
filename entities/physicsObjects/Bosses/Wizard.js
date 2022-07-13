@@ -31,6 +31,8 @@ class Wizard extends Boss{
         
         this.knockbackSpeed = 50;
         this.knockbackTime = 0.5;
+
+        this.repelForce = 0;
         
         this.normalLookAheadTime = 0.8;
         this.lookAheadTime = this.normalLookAheadTime;
@@ -41,9 +43,8 @@ class Wizard extends Boss{
         this.botCooldown = 10 / this.agressiveness;
         this.botSpawnTime;
 
-        this.decideToCreateNewBots();
+        this.createBotsCircle(60, 2*PI, 12, 0, new Vector(0, 0), 2);
 
-        this.position = new Vector(this.arenaCenter.x - 8, 0.3*this.arenaCenter.y + 0.7*this.arenaTop);
 
         this.createWalls();
 
@@ -64,18 +65,20 @@ class Wizard extends Boss{
             let rightTop =    new Vector(this.arenaRight - 5, this.arenaTop - 5);
             let leftBottom =  new Vector(this.arenaLeft + 5,  this.arenaBottom + 5);
             let rightBottom = new Vector(this.arenaRight - 5, this.arenaBottom + 5);
+            
+            let speed = 4;
 
             if(this.angleToPlayer < 1/4*PI || this.angleToPlayer > 7/4*PI){
-                this.createBotsLine(leftTop, leftBottom, numBotsHorizontal, new Vector(2, 0));
+                this.createBotsLine(leftTop, leftBottom, numBotsVertical, new Vector(speed, 0));
             }
             else if(this.angleToPlayer < 3/4*PI){
-                this.createBotsLine(rightBottom, leftBottom, numBotsVertical, new Vector(0, 2));
+                this.createBotsLine(rightBottom, leftBottom, numBotsHorizontal, new Vector(0, speed));
             }
             else if(this.angleToPlayer > 5/4*PI){
-                this.createBotsLine(rightTop, leftTop, numBotsHorizontal, new Vector(0, -2));
+                this.createBotsLine(rightTop, leftTop, numBotsHorizontal, new Vector(0, -speed));
             }
             else{
-                this.createBotsLine(rightTop, rightBottom, numBotsVertical, new Vector(-2, 0));
+                this.createBotsLine(rightTop, rightBottom, numBotsVertical, new Vector(-speed, 0));
             }
 
             console.log(this.angleToPlayer);
@@ -103,7 +106,7 @@ class Wizard extends Boss{
         time.delayedFunction(this, 'decideToCreateNewBots', this.botCooldown);
     }
 
-    createBotsCircle(distance, angleChange, numBots, offset = 0, startingVelocity){
+    createBotsCircle(distance, angleChange, numBots, offset, startingVelocity, friction = 0){
         let startAngle = this.angleToPlayer - angleChange/2 + offset;
 
         for(let i = 0; i < numBots; i++){
@@ -114,7 +117,11 @@ class Wizard extends Boss{
             let botPosition = new Vector(distance, 0);
             botPosition.angle = angle;
             bot.position = botPosition.add(this.position);
+
             bot.velocity = startingVelocity;
+
+            bot.normalFriction = friction;
+            bot.friction = friction;
 
             bot.parent = this;
             bot.setIndex();
@@ -132,7 +139,7 @@ class Wizard extends Boss{
     }
 
     get runSpeed(){
-        return 0;
+        return 10;
     }
 
     createWalls(){
@@ -141,24 +148,24 @@ class Wizard extends Boss{
 
         for(let i = 0; i < this.arenaSize.x; i+=8){
             fullDelay += delay;
-            time.delayedFunction(this, 'createWallBullet', fullDelay, [new Vector(this.arenaLeft+i, this.arenaTop)]);
+            time.delayedFunction(this, 'createWallBullet', fullDelay, [new Vector(this.arenaLeft+i, this.arenaTop), 'down']);
         }
         for(let i = 0; i < this.arenaSize.y; i+=8){
             fullDelay += delay;
-            time.delayedFunction(this, 'createWallBullet', fullDelay, [new Vector(this.arenaRight, this.arenaTop-i)]);
+            time.delayedFunction(this, 'createWallBullet', fullDelay, [new Vector(this.arenaRight, this.arenaTop-i), 'right']);
         }
         for(let i = 0; i < this.arenaSize.x; i+=8){
             fullDelay += delay;
-            time.delayedFunction(this, 'createWallBullet', fullDelay, [new Vector(this.arenaRight-i, this.arenaBottom)]);
+            time.delayedFunction(this, 'createWallBullet', fullDelay, [new Vector(this.arenaRight-i, this.arenaBottom), 'bottom']);
         }
         for(let i = 0; i < this.arenaSize.y; i+=8){
             fullDelay += delay;
-            time.delayedFunction(this, 'createWallBullet', fullDelay, [new Vector(this.arenaLeft, this.arenaBottom+i)]);
+            time.delayedFunction(this, 'createWallBullet', fullDelay, [new Vector(this.arenaLeft, this.arenaBottom+i), 'left']);
         }
     }
 
-    createWallBullet(position){
-        let myBullet = new Bullet(bulletImage[0], position, new Vector(0, 0));
+    createWallBullet(position, rotation){
+        let myBullet = new Bullet(7.5, position, new Vector(0, 0));
         myBullet.timeAlive = Infinity;
         myBullet.melee = true;
     }

@@ -144,7 +144,8 @@ class Clocksmith extends Boss{
     teleportAway(){
         this.position = this.arenaCenter;
 
-        let newVector = new Vector(this.arenaSize.y - 25, 0);
+        let newVector = new Vector(1, 0);
+        newVector.magnitude = this.arenaSize.y/2 - 25;
         newVector.angle = this.angleToPlayer + PI;
 
         this.position = this.arenaCenter.add(newVector);

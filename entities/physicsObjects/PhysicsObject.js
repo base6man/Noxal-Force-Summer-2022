@@ -13,4 +13,12 @@ class PhysicsObject{
         this.position.x += this.velocity.x * time.deltaTime;
         this.position.y += this.velocity.y * time.deltaTime;
     }
+
+    get direction(){
+        return this.velocity.direction;
+    }
+
+    get diagonal(){
+        return this.velocity.diagonal;
+    }
 }

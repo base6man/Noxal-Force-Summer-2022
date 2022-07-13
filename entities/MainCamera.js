@@ -19,14 +19,17 @@ class MainCamera{
 
         this.freezX;
         this.freezY;
+        this.isFrozen = false;
 
         this.name = 'mainCamera';
 
         this.shakeVector = new Vector(0, 0);
         this.shakeMagnitude = 1;
+        this.updateShake();
     }
 
     update(){
+        if(this.isFrozen) return;
 
         if(this.targets.length == 1){
             // The only one is the player
@@ -51,7 +54,7 @@ class MainCamera{
     }
 
     updateImage(){
-        this.updateShake();
+        // Nothing!
     }
 
     get pixelPosition(){
@@ -103,13 +106,22 @@ class MainCamera{
     }
 
     updateShake(){
-        this.shakeVector.magnitude = (1 - 30*time.deltaTime) * this.shakeVector.magnitude;
+        this.shakeVector.magnitude = (1 - 90*time.deltaTime) * this.shakeVector.magnitude;
         this.shakeVector.angle = random(0, 2*PI);
+        time.delayedFunction(this, 'updateShake', 1/30);
     }
 
     createShake(magnitude = 1){
         this.shakeVector = new Vector(this.shakeVector.magnitude + magnitude*this.shakeMagnitude, 0);
         this.shakeVector.angle = random(0, 2*PI);
+    }
+
+    freeze(){
+        this.isFrozen = true;
+    }
+
+    unfreeze(){
+        this.isFrozen = false;
     }
 
     get topEdge(){

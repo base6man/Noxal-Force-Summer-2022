@@ -1,23 +1,18 @@
 class Bullet extends PhysicsObject{
 
-    constructor(image, startingPosition, startingVelocity = new Vector(0, 0), canWhoosh = false){
+    constructor(colliderRadius, startingPosition, startingVelocity = new Vector(0, 0), canWhoosh = false){
 
         super(startingPosition, startingVelocity);
         this.acceleration = 0;
         this.homing = 0;
         this.target = scene.player;
 
-        this.image = image;
-        this.image.name = 'bullet';
-
         this.melee = false;
+        if(colliderRadius == 0) colliderRadius = this.image.height/2 - 2;
 
-        this.collider = new CircleCollider(this, 0, 0, this.image.height/2 - 2);
+        this.collider = new CircleCollider(this, 0, 0, colliderRadius);
         this.collider.layer = 'enemyAttack';
         this.collider.isTrigger = true;
-        // This should really be a circle collider, but I'll deal with that later.
-        // Perhaps I make some box bullets too. I don't know how that would work, though
-        // Laser and wave need their own type of bullet: line bullet?
 
         this.timeAlive = 4;
         this.timeHoming = Infinity;
@@ -34,6 +29,35 @@ class Bullet extends PhysicsObject{
             this.whoosh.play();
             time.delayedFunction(this, 'stopWhoosh', 0.5);
         }
+
+        this.createAnimationManager();
+    }
+
+    createAnimationManager(){
+        
+        let listOfAnimations = [];
+
+        let normalAnimation = {
+            parent: this,
+            name: 'normal',
+            animation: new Animator('meleeAttack', meleeAttack, 0.3),
+            get canRun(){
+                return !this.parent.diagonal;
+            }
+        }
+        listOfAnimations.push(normalAnimation);
+        
+        let diagonalAnimation = {
+            parent: this,
+            name: 'diagonal',
+            animation: new Animator('diagonalMeleeAttack', diagonalMeleeAttack, 0.3),
+            get canRun(){
+                return this.parent.diagonal;
+            }
+        }
+        listOfAnimations.push(diagonalAnimation);
+
+        this.animationManager = new AnimationManager(listOfAnimations);
     }
 
     stopWhoosh(){
@@ -44,10 +68,6 @@ class Bullet extends PhysicsObject{
         this.collider.layer = 'blueBullet';
         this.image = bulletImage[3];
         this.melee = true;
-    }
-
-    makeColliderGenerous(){
-        this.collider.radius = this.image.height / 2;
     }
 
     update(){
@@ -82,8 +102,26 @@ class Bullet extends PhysicsObject{
         return this.collider.layer == 'playerAttack';
     }
 
+    get direction(){
+        if(this.trueRotation) return this.trueRotation;
+        if(this.rotationTarget) return this.rotationTarget.direction;
+        return this.velocity.direction;
+    }
+
+    get diagonal(){
+        if(this.trueRotation) return false;
+        if(this.rotationTarget) return this.rotationTarget.diagonal;
+        return this.velocity.diagonal;
+    }
+
     updateImage(){
-        this.image.draw(this.position.x, this.position.y);
+        if(this.animationManager){
+            this.animationManager.update();
+            this.animationManager.draw(this.position.x, this.position.y, this.direction);
+        }
+        else{
+            this.image.draw(this.position.x, this.position.y);
+        }
     }
 
     onTriggerCollision(other){

@@ -1,7 +1,7 @@
 let scene, transition;
 let skipIntro = true;
 
-let bulletImage;
+let bulletImage, meleeAttack, diagonalMeleeAttack;
 let floorImages;
 let playerRunning, playerIdle, playerDiagonal;
 let playerImages = {}
@@ -149,6 +149,8 @@ function isRealNumber(num){
   return typeof num == 'number' && (num < 0 || num >= 0) && (num != Infinity || num != -Infinity);
 }
 
+const varToString = varObj => Object.keys(varObj)[0];
+
 // Preload initializes images and their relavant canvases
 function preload() {
   playerRunning = [
@@ -173,9 +175,15 @@ function preload() {
 
   bulletImage = [
     loadImage("images/bullet(0).png"),
-    loadImage("images/bullet(1).png"),
-    loadImage("images/bullet(clear).png"),
-    loadImage("images/bullet(blue).png")
+    loadImage("images/bullet(1).png")
+  ]
+
+  meleeAttack = [
+    loadImage("images/newAttack.png")
+  ]
+  
+  diagonalMeleeAttack = [
+    loadImage("images/newDiagonal.png")
   ]
 
   bossIdle = [
@@ -188,10 +196,11 @@ function preload() {
     loadImage("images/bossImages/bot(0).png")
   ]
 
-  songs = {
-    intro: loadSound("sounds/fieldTheme.wav"),
-    fight: loadSound("sounds/onTheTrain.wav")
-  }
+  songs = [
+    { name: 'guard',      song: loadSound("sounds/onTheTrain.wav") },
+    { name: 'soldier',    song: loadSound("sounds/factoryTheme.wav") },
+    { name: 'clocksmith', song: loadSound("sounds/bellsAndWhistles.wav") }
+  ]
 
   whoosh = loadSound("sounds/whoosh.wav");
   whoosh.setVolume(0.4);
@@ -201,7 +210,7 @@ function setup(){
   time = new Time();
   createCanvas(windowWidth, windowHeight - 4);
 
-  allImages = [playerRunning, playerIdle, playerDiagonal, floorImage, bulletImage, bossIdle, bossAttack, botImage];
+  allImages = [playerRunning, playerIdle, playerDiagonal, floorImage, bulletImage, meleeAttack, diagonalMeleeAttack, bossIdle, bossAttack, botImage];
   for(let i in allImages){
     for(let j in allImages[i]){
       allImages[i][j] = new Canvas(allImages[i][j]);
@@ -250,8 +259,11 @@ function createScene(){
 
 function updateSong(){
   let oldSong = currentSong;
-  if(difficulty == 0) currentSong = songs.intro;
-  else{ currentSong = songs.fight; }
+  for(let i of songs){
+    if(i.name == scene.bossManager.nameOfBoss){
+      currentSong = i.song;
+    }
+  }
 
   if(!currentSong.isPlaying()){
     if(oldSong) oldSong.stop();

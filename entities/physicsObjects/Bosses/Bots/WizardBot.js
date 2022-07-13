@@ -3,7 +3,7 @@ class WizardBot extends Bot{
     constructor(arenaCenter, arenaSize, difficulty){
         super(arenaCenter, arenaSize);
 
-        this.runSpeed = 2;
+        this.runSpeed = 4;
         this.dashAttackSpeed = 8;
 
         this.difficulty =     difficulty;
@@ -27,6 +27,8 @@ class WizardBot extends Bot{
         
         this.normalLookAheadTime = 0.7;
         this.lookAheadTime = this.normalLookAheadTime;
+
+        this.repelForce = 5;
     }
 
     createAttackManager(){
