@@ -231,7 +231,12 @@ class Player extends PhysicsObject{
 
     endAttack(){
         this.attackObject.dissapate();
+    }
+
+    endAttackAnimation(){
         this.attackObject = null;
+        // Time doesn't really matter, it just needs to be long enough
+        time.delayedFunction(this, 'endAttackAnimation', 0.5);
     }
 
     attackCooldown(){
@@ -250,7 +255,6 @@ class Player extends PhysicsObject{
 
         if(other.collider.layer == 'enemyAttack' && !this.phaseThrough){
 
-            scene.mainCamera.createShake();
 
             if(!this.invincible){
                 
@@ -260,8 +264,9 @@ class Player extends PhysicsObject{
                     scene.gameOver = true;
                 }
                 else{
-                    scene.mainCamera.createShake(2);
-                    time.hitStop(0.04);
+                    scene.mainCamera.createShake(3);
+                    scene.mainCamera.freezeTarget = this;
+                    time.hitStop(0.1);
 
                     this.healthBar.display(this.health);
 
@@ -271,6 +276,9 @@ class Player extends PhysicsObject{
                     time.delayedFunction(this, 'endInvincibility', this.healthBar.displayTime);
                     time.delayedFunction(this, 'endKnockback', this.knockbackTime);
                 }
+            }
+            else{
+                scene.mainCamera.createShake();
             }
 
             let knockbackVector = this.position.subtract(other.position);

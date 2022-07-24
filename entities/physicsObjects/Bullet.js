@@ -30,6 +30,7 @@ class Bullet extends PhysicsObject{
             time.delayedFunction(this, 'stopWhoosh', 0.5);
         }
 
+        this.canBeStill = true;
         this.createAnimationManager();
     }
 
@@ -37,10 +38,41 @@ class Bullet extends PhysicsObject{
         
         let listOfAnimations = [];
 
+        let dissapateAnimation = {
+            parent: this,
+            name: 'dissapate',
+            animation: new Animator('dissapate', attackImages.dissapate, 0.1),
+            get canRun(){
+                return !this.parent.isStillAlive;
+            }
+        }
+        listOfAnimations.push(dissapateAnimation);
+        
+
+        let generateAnimation = {
+            parent: this,
+            name: 'generate',
+            animation: new Animator('generate', attackImages.generate, 0.1),
+            get canRun(){
+                return this.parent.timeSinceBirth < 0.05;
+            }
+        }
+        //listOfAnimations.push(generateAnimation);
+
+        let stillAnimation = {
+            parent: this,
+            name: 'still',
+            animation: new Animator('stillAttack', attackImages.still, 0.3),
+            get canRun(){
+                return this.parent.velocity.magnitude < 30 && this.parent.canBeStill;
+            }
+        }
+        listOfAnimations.push(stillAnimation);
+
         let normalAnimation = {
             parent: this,
             name: 'normal',
-            animation: new Animator('meleeAttack', meleeAttack, 0.3),
+            animation: new Animator('meleeAttack', attackImages.normal, 0.3),
             get canRun(){
                 return !this.parent.diagonal;
             }
@@ -50,7 +82,7 @@ class Bullet extends PhysicsObject{
         let diagonalAnimation = {
             parent: this,
             name: 'diagonal',
-            animation: new Animator('diagonalMeleeAttack', diagonalMeleeAttack, 0.3),
+            animation: new Animator('diagonalMeleeAttack', attackImages.diagonal, 0.3),
             get canRun(){
                 return this.parent.diagonal;
             }
@@ -89,8 +121,20 @@ class Bullet extends PhysicsObject{
         }
     }
 
+    get canBeStill(){
+        return this.true_canBeStill && !this.melee;
+    }
+
+    set canBeStill(_canBeStill){
+        this.true_canBeStill = _canBeStill;
+    }
+
     get acceleration(){
         return this.myAcceleration;
+    }
+
+    get timeSinceBirth(){
+        return time.runTime - this.startTime;
     }
 
     set acceleration(_acceleration){
@@ -139,16 +183,21 @@ class Bullet extends PhysicsObject{
         this.isStillAlive = false;
         if(this.whoosh) this.whoosh.stop();
         
-        scene.bullets.splice(this.index, 1);
         this.collider.delete();
         time.stopFunctions(this, null);
-        for(let i = this.index; i < scene.bullets.length; i++){
-          scene.bullets[i].moveDownOneIndex();
-        }
+        time.delayedFunction(this, 'finishDissapate', 0.2);
+    }
 
-        for(let i in scene.bullets){
-            console.assert(scene.bullets[i].index == i);
-        }
+    finishDissapate(){
+        scene.bullets.splice(this.index, 1);
+
+        for(let i = this.index; i < scene.bullets.length; i++){
+            scene.bullets[i].moveDownOneIndex();
+          }
+  
+          for(let i in scene.bullets){
+              console.assert(scene.bullets[i].index == i);
+          }
     }
 
     moveDownOneIndex(){

@@ -1,7 +1,7 @@
 let scene, transition;
 let skipIntro = true;
 
-let bulletImage, meleeAttack, diagonalMeleeAttack;
+let attackImage, diagonalAttackImage, stillAttackImage, attackDissapateImage, diagonalDissapateImage, attackGenerateImage;
 let floorImages;
 let playerRunning, playerIdle, playerDiagonal;
 let playerImages = {}
@@ -18,11 +18,11 @@ let collisionSteps = 5;
 
 let pixelSize = 5;
 
-let difficulty = 2;
+let difficulty = 6;
 
 let songs;
 let currentSong;
-let songVolume = 0.0;
+let songVolume = 0.0; // 0.8
 
 let whoosh;
 
@@ -173,17 +173,21 @@ function preload() {
     loadImage("images/floorImages/floorTile1.png")
   ]
 
-  bulletImage = [
-    loadImage("images/bullet(0).png"),
-    loadImage("images/bullet(1).png")
+  attackImage = [
+    loadImage("images/attackImages/newAttack.png")
   ]
-
-  meleeAttack = [
-    loadImage("images/newAttack.png")
+  diagonalAttackImage = [
+    loadImage("images/attackImages/newDiagonal.png")
   ]
-  
-  diagonalMeleeAttack = [
-    loadImage("images/newDiagonal.png")
+  stillAttackImage = [
+    loadImage("images/attackImages/stillAttack.png")
+  ]
+  attackDissapateImage = [
+    loadImage("images/attackImages/attackDissapate(0).png"),
+    loadImage("images/attackImages/attackDissapate(1).png")
+  ]
+  attackGenerateImage = [
+    loadImage("images/attackImages/attackGenerate.png")
   ]
 
   bossIdle = [
@@ -203,18 +207,26 @@ function preload() {
   ]
 
   whoosh = loadSound("sounds/whoosh.wav");
-  whoosh.setVolume(0.4);
+  whoosh.setVolume(0.6);
 }
 
 function setup(){
   time = new Time();
   createCanvas(windowWidth, windowHeight - 4);
 
-  allImages = [playerRunning, playerIdle, playerDiagonal, floorImage, bulletImage, meleeAttack, diagonalMeleeAttack, bossIdle, bossAttack, botImage];
+  allImages = [playerRunning, playerIdle, playerDiagonal, floorImage, attackImage, diagonalAttackImage, stillAttackImage, attackDissapateImage, attackGenerateImage, bossIdle, bossAttack, botImage];
   for(let i in allImages){
     for(let j in allImages[i]){
       allImages[i][j] = new Canvas(allImages[i][j]);
     }
+  }
+
+  attackImages = {
+    normal: attackImage,
+    diagonal: diagonalAttackImage,
+    still: stillAttackImage,
+    dissapate: attackDissapateImage,
+    generate: attackGenerateImage
   }
 
   playerImages = {

@@ -276,15 +276,23 @@ class Boss extends PhysicsObject{
 
 
             if(!this.invincible){
-                scene.mainCamera.createShake();
 
                 this.health -= 1;
+                
+                if(this.isMainBoss){
+                    scene.mainCamera.createShake(1.5);
+                    time.hitStop(0.08);
+                }
+                else{
+                    scene.mainCamera.createShake();
+                }
 
                 if(this.health <= 0){
                     this.killBoss();
                     if(this.isMainBoss) scene.bossManager.killBoss(this.index);
                 }
                 else{
+
                     this.invincible = true;
                     time.delayedFunction(this, 'endInvincibility', this.healthBar.switchTime);
 

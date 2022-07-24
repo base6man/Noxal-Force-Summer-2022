@@ -15,46 +15,49 @@ class MainCamera{
 
         this.offset;
         this.offsetMagnitude = 60;
-        this.speed = 2;
 
-        this.freezX;
-        this.freezY;
+        this.normalSpeed = 2;
+        this.speed = this.normalSpeed;
+
         this.isFrozen = false;
+        this.freezeTarget;
 
         this.name = 'mainCamera';
 
         this.shakeVector = new Vector(0, 0);
         this.shakeMagnitude = 1;
+        this.maxShakeMagnitude = 5;
         this.updateShake();
     }
 
     update(){
+        this.freezeTarget = null;
+
         if(this.isFrozen) return;
 
-        if(this.targets.length == 1){
-            // The only one is the player
-            this.offset = this.setOffset();
-            this.offset.magnitude = this.offsetMagnitude * scene.player.velocity.magnitude / scene.player.speed;
-        }
-        else{
-            this.offset = new Vector(0, 0);
-        }
-
-        // Calculations before freezing axes
-        let myPos = this.position;
-        let targetPos = this.averageTargetPosition.add(this.offset);
-        
-        //targetPos.x = targetPos.x * (1-this.freezX) + this.startX*this.freezX;
-        //targetPos.y = targetPos.y * (1-this.freezY) + this.startY*this.freezY;
-
-        this.position = myPos.lerp(targetPos, this.speed * time.deltaTime);
-        
-        // Calculations after freezing
+        this.position = this.position.lerp(this.targetPos, this.speed * time.deltaTime);
         this.position = this.position.add(this.shakeVector);
+
+        console.log(this.position);
     }
 
     updateImage(){
         // Nothing!
+    }
+
+    freeze(){
+        this.isFrozen = true;
+        if(this.freezeTarget)  this.position = this.freezeTarget.position.add(this.position).divide(2);
+    }
+
+    unfreeze(){
+        this.isFrozen = false;
+        this.speed = this.normalSpeed / 2;
+        time.delayedFunction(this, 'returnToNormalSpeed', 0.5);
+    }
+
+    returnToNormalSpeed(){
+        this.speed = this.normalSpeed;
     }
 
     get pixelPosition(){
@@ -105,23 +108,31 @@ class MainCamera{
         return averageTarget;
     }
 
+    get targetPos(){
+
+        if(this.targets.length == 1){
+            // The only one is the player
+            this.offset = this.setOffset();
+            this.offset.magnitude = this.offsetMagnitude * scene.player.velocity.magnitude / scene.player.speed;
+        }
+        else{
+            this.offset = new Vector(0, 0);
+        }
+        
+        return this.averageTargetPosition.add(this.offset);
+    }
+
     updateShake(){
-        this.shakeVector.magnitude = (1 - 90*time.deltaTime) * this.shakeVector.magnitude;
-        this.shakeVector.angle = random(0, 2*PI);
+        if(!this.isFrozen){
+            this.shakeVector.magnitude = Math.min((1 - 90*time.deltaTime) * this.shakeVector.magnitude, this.maxShakeMagnitude);
+            this.shakeVector.angle = random(0, 2*PI);
+        }
         time.delayedFunction(this, 'updateShake', 1/30);
     }
 
     createShake(magnitude = 1){
         this.shakeVector = new Vector(this.shakeVector.magnitude + magnitude*this.shakeMagnitude, 0);
         this.shakeVector.angle = random(0, 2*PI);
-    }
-
-    freeze(){
-        this.isFrozen = true;
-    }
-
-    unfreeze(){
-        this.isFrozen = false;
     }
 
     get topEdge(){
