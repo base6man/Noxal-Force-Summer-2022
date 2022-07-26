@@ -1,13 +1,16 @@
 let scene, transition;
 let skipIntro = true;
 
-let attackImage, diagonalAttackImage, stillAttackImage, attackDissapateImage, diagonalDissapateImage, attackGenerateImage;
+let attackImage, diagonalAttackImage, stillAttackImage, attackDissapateImage, diagonalDissapateImage;
 let floorImages;
 let playerRunning, playerIdle, playerDiagonal;
-let playerImages = {}
-let bossIdle, bossAttack, botImage;
-let bossImages = {}
+let guardIdle, guardAttack, botImage;
+let clocksmithImage, clocksmithSwitch, clocksmithReverseSwitch;
 let allImages;
+
+let bossImages = {}
+let playerImages = {}
+let clocksmithImages = {}
 
 let lagMultiplier = 1;
 let time;
@@ -18,7 +21,7 @@ let collisionSteps = 5;
 
 let pixelSize = 5;
 
-let difficulty = 6;
+let difficulty = 2;
 
 let songs;
 let currentSong;
@@ -186,15 +189,24 @@ function preload() {
     loadImage("images/attackImages/attackDissapate(0).png"),
     loadImage("images/attackImages/attackDissapate(1).png")
   ]
-  attackGenerateImage = [
-    loadImage("images/attackImages/attackGenerate.png")
+
+  guardIdle = [
+    loadImage("images/bossImages/guardIdle(0).png")
+  ]
+  guardAttack = [
+    loadImage("images/bossImages/guardAttack(0).png")
   ]
 
-  bossIdle = [
-    loadImage("images/bossImages/bossIdle(0).png")
+  clocksmithImage = [
+    loadImage("images/bossImages/clocksmith(0).png")
   ]
-  bossAttack = [
-    loadImage("images/bossImages/bossAttack(0).png")
+  clocksmithSwitch = [
+    loadImage("images/bossImages/clocksmithSwitch(0).png"),
+    loadImage("images/bossImages/clocksmithSwitch(1).png")
+  ]
+  clocksmithReverseSwitch = [
+    loadImage("images/bossImages/clocksmithSwitch(1).png"),
+    loadImage("images/bossImages/clocksmithSwitch(0).png")
   ]
   botImage = [
     loadImage("images/bossImages/bot(0).png")
@@ -214,7 +226,14 @@ function setup(){
   time = new Time();
   createCanvas(windowWidth, windowHeight - 4);
 
-  allImages = [playerRunning, playerIdle, playerDiagonal, floorImage, attackImage, diagonalAttackImage, stillAttackImage, attackDissapateImage, attackGenerateImage, bossIdle, bossAttack, botImage];
+  allImages = [
+    playerRunning, playerIdle, playerDiagonal, 
+    floorImage, 
+    attackImage, diagonalAttackImage, stillAttackImage, attackDissapateImage, 
+    guardIdle, guardAttack, 
+    clocksmithImage, clocksmithSwitch, clocksmithReverseSwitch,
+    botImage
+  ];
   for(let i in allImages){
     for(let j in allImages[i]){
       allImages[i][j] = new Canvas(allImages[i][j]);
@@ -225,8 +244,7 @@ function setup(){
     normal: attackImage,
     diagonal: diagonalAttackImage,
     still: stillAttackImage,
-    dissapate: attackDissapateImage,
-    generate: attackGenerateImage
+    dissapate: attackDissapateImage
   }
 
   playerImages = {
@@ -236,9 +254,16 @@ function setup(){
   }
 
   bossImages = {
-    idle: bossIdle,
-    attack: bossAttack,
+    guardIdle: guardIdle,
+    guardAttack: guardAttack,
     bot: botImage
+  }
+
+  clocksmithImages = {
+    
+    normal: clocksmithImage,
+    switch: clocksmithSwitch,
+    reverseSwitch: clocksmithReverseSwitch
   }
   
   if(skipIntro){

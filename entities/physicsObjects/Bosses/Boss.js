@@ -6,7 +6,7 @@ class Boss extends PhysicsObject{
      constructor(arenaCenter, arenaSize){
         
         super(arenaCenter);
-        this.collider = new BoxCollider(this, 0, 0, 5, 5);
+        this.collider = new BoxCollider(this, 0, 0, 7, 7);
         this.collider.layer = 'boss';
         this.name = 'boss';
 
@@ -74,7 +74,7 @@ class Boss extends PhysicsObject{
         let attackAnimation = {
             parent: this, 
             name: 'attack',
-            animation: new Animator('attack', bossImages.attack, 0.3),
+            animation: new Animator('attack', bossImages.guardAttack, 0.3),
             get canRun(){
                 return this.parent.attackAnimation && !this.parent.isDodging;
             }
@@ -85,7 +85,7 @@ class Boss extends PhysicsObject{
         let idleAnimation = {
             parent: this,
             name: 'idle',
-            animation: new Animator('idle', bossImages.idle, 0.8),
+            animation: new Animator('idle', bossImages.guardIdle, 0.8),
             get canRun(){
                 return true;
             }
@@ -202,6 +202,14 @@ class Boss extends PhysicsObject{
         this.minDistance = this.normalMinDistance;
         this.lookAheadTime = this.normalLookAheadTime;
         this.attackAnimation = false;
+    }
+
+    get direction(){
+        return this.vectorToPlayer.direction;
+    }
+
+    get diagonal(){
+        return this.vectorToPlayer.diagonal;
     }
 
     get dodgeSpeed(){

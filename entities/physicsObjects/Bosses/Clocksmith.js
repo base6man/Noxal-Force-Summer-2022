@@ -15,6 +15,9 @@ class Clocksmith extends Boss{
         this.speed = this.runSpeed;
         this.normalFriction = 4;
         this.friction = this.normalFriction;
+
+        this.wasBotLastFrame;
+        this.timeOfBotChange = time.runTime;
         
         this.minimumDistanceToDodge = 20 * (this.dodgePower + 4)/5;
         this.distanceToDodge = 60 * (this.dodgePower + 4)/5;
@@ -64,24 +67,34 @@ class Clocksmith extends Boss{
     createAnimations(){
         let listOfAnimations = [];
 
-
-        let attackAnimation = {
-            parent: this, 
-            name: 'attack',
-            animation: new Animator('attack', bossImages.attack, 0.3),
+        /*
+        let switchAnimation = {
+            parent: this,
+            name: 'switch',
+            animation: new Animator('switch', clocksmithImages.switch, 0.05, false),
             get canRun(){
-                return this.parent.attackAnimation && !this.parent.isDodging;
+                return !this.parent.isBot && time.runTime - this.parent.timeOfBotChange < 0.1;
             }
         }
-        listOfAnimations.push(attackAnimation);
-
+        listOfAnimations.push(switchAnimation);
+        
+        let reverseSwitch = {
+            parent: this,
+            name: 'switch',
+            animation: new Animator('reverse', clocksmithImages.reverseSwitch, 0.05, false),
+            get canRun(){
+                return this.parent.isBot && time.runTime - this.parent.timeOfBotChange < 0.1;
+            }
+        }
+        listOfAnimations.push(reverseSwitch);
+        */
 
         let botAnimation = {
             parent: this,
             name: 'bot',
             animation: new Animator('bot', bossImages.bot, 1),
             get canRun(){
-                return this.parent.distanceToPlayer > this.parent.minDistance;
+                return this.parent.runSpeed == 4;
             }
         }
         listOfAnimations.push(botAnimation);
@@ -90,7 +103,7 @@ class Clocksmith extends Boss{
         let idleAnimation = {
             parent: this,
             name: 'idle',
-            animation: new Animator('idle', bossImages.idle, 0.8),
+            animation: new Animator('idle', clocksmithImages.normal, 0.8),
             get canRun(){
                 return true;
             }
@@ -100,23 +113,47 @@ class Clocksmith extends Boss{
         this.animationManager = new AnimationManager(listOfAnimations);
     }
 
+    get runSpeed(){
+        if(this.isBot) return 4;
+        return 9;
+    }
+
+    get isBot(){
+        if(this.distanceToPlayer > this.minDistance) return true;
+        return false;
+    }
+
+    update(){
+        super.update();
+
+        if(this.isBot != this.botLastFrame){
+            this.timeOfBotChange = time.runTime;
+            this.botLastFrame = this.isBot;
+        }
+    }
+
     createBotsCircle(distance, angleChange, numBots, offset = 0, startingVelocity = new Vector(0, 0)){
         let startAngle = this.angleToPlayer - angleChange/2 + offset;
 
         for(let i = 0; i < numBots; i++){
             let angle = startAngle + i*angleChange/numBots;
             
-            let bot = new ClocksmithBot(this.arenaCenter, this.arenaSize, this.difficulty);
-
             let botPosition = new Vector(distance, 0);
             botPosition.angle = angle;
-            bot.position = botPosition.add(this.position);
-            //bot.velocity = startingVelocity;
+            botPosition = botPosition.add(this.position);
 
-            bot.parent = this;
-            bot.setIndex();
-
-            this.myBots.push(bot);
+            if(botPosition.insideOf(new Vector(this.arenaRight, this.arenaTop), new Vector(this.arenaLeft, this.arenaBottom))){
+                let bot = new ClocksmithBot(this.arenaCenter, this.arenaSize, this.difficulty);
+    
+                bot.position = botPosition;
+                bot.velocity = startingVelocity;
+    
+                bot.parent = this;
+                bot.setIndex();
+    
+                this.myBots.push(bot);
+            }
+            
         }
 
         time.delayedFunction(this, 'createBotsCircle', this.botCooldown, [30, PI, 3]);
@@ -125,11 +162,6 @@ class Clocksmith extends Boss{
     killBoss(){
         super.killBoss();
         time.stopFunctions(this, 'createBotsCircle');
-    }
-
-    get runSpeed(){
-        if(this.distanceToPlayer > this.minDistance) return 4;
-        return 9;
     }
     
     endKnockback(){
