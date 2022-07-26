@@ -2,14 +2,14 @@ class ClocksmithBot extends Bot{
     constructor(arenaCenter, arenaSize, difficulty){
         super(arenaCenter, arenaSize);
 
-        this.runSpeed = 4;
+        this.runSpeed = 2;
         this.dashAttackSpeed = 15;
 
         this.difficulty =     difficulty;
-        this.agressiveness =  this.difficulty;
+        this.agressiveness =  1 + (this.difficulty-1)/4;
         this.attackPower =    1 + (this.difficulty-1)/3;
-        this.shootSpeed =     this.runSpeed * (this.difficulty-1)/5;
-        this.localSpeedMult = 1 + (this.difficulty-1)/6;
+        this.shootSpeed =     this.runSpeed;
+        this.localSpeedMult = 1 + (this.difficulty-1)/3;
         this.dodgePower =     1 + (this.difficulty-1)/3;
 
         this.normalMinDistance = 0;

@@ -6,11 +6,12 @@ class Clocksmith extends Boss{
         this.dashAttackSpeed = 20;
 
         this.difficulty =     difficulty;
-        this.agressiveness =  this.difficulty;
-        this.attackPower =    1 + (this.difficulty-1)/3;
-        this.shootSpeed =     this.runSpeed * (this.difficulty-1)/5;
-        this.localSpeedMult = 1 + (this.difficulty-1)/6;
-        this.dodgePower =     1 + (this.difficulty-1)/3;
+        this.agressiveness =  1 + (this.difficulty-1)/4;
+        this.attackPower =    1 + (this.difficulty-1)/5;
+        this.shootSpeed =     this.runSpeed;
+        this.localSpeedMult = 1 + (this.difficulty-1)/3;
+        this.dodgePower =     1 + (this.difficulty-1)/8;
+        this.botCooldown =    8 / (1 + (this.difficulty-1)/5);
 
         this.speed = this.runSpeed;
         this.normalFriction = 4;
@@ -19,16 +20,12 @@ class Clocksmith extends Boss{
         this.wasBotLastFrame;
         this.timeOfBotChange = time.runTime;
         
-        this.minimumDistanceToDodge = 20 * (this.dodgePower + 4)/5;
-        this.distanceToDodge = 60 * (this.dodgePower + 4)/5;
-
-        this.dodgeDist = 60 * (this.dodgePower + 4)/5;
-        this.dodgeTime = 0.3;
+        this.minimumDistanceToDodge = 20 * this.dodgePower;
         
         this.health = 3;
 
-        this.normalMinDistance = 100 / this.dodgePower;
-        this.normalMaxDistance = 120 / this.dodgePower;
+        this.normalMinDistance = Math.max(100 / this.dodgePower, 60);
+        this.normalMaxDistance = Math.max(120 / this.dodgePower, 100);
         this.minDistance = this.normalMinDistance;
         this.maxDistance = this.normalMaxDistance;
         
@@ -40,7 +37,6 @@ class Clocksmith extends Boss{
 
         this.myBots = [];
 
-        this.botCooldown = 10 / this.agressiveness;
 
         this.createBotsCircle(arenaSize.y/2, 2*PI, 6, PI/6);
 
@@ -67,34 +63,12 @@ class Clocksmith extends Boss{
     createAnimations(){
         let listOfAnimations = [];
 
-        /*
-        let switchAnimation = {
-            parent: this,
-            name: 'switch',
-            animation: new Animator('switch', clocksmithImages.switch, 0.05, false),
-            get canRun(){
-                return !this.parent.isBot && time.runTime - this.parent.timeOfBotChange < 0.1;
-            }
-        }
-        listOfAnimations.push(switchAnimation);
-        
-        let reverseSwitch = {
-            parent: this,
-            name: 'switch',
-            animation: new Animator('reverse', clocksmithImages.reverseSwitch, 0.05, false),
-            get canRun(){
-                return this.parent.isBot && time.runTime - this.parent.timeOfBotChange < 0.1;
-            }
-        }
-        listOfAnimations.push(reverseSwitch);
-        */
-
         let botAnimation = {
             parent: this,
             name: 'bot',
             animation: new Animator('bot', bossImages.bot, 1),
             get canRun(){
-                return this.parent.runSpeed == 4;
+                return this.parent.isBot;
             }
         }
         listOfAnimations.push(botAnimation);
@@ -114,8 +88,8 @@ class Clocksmith extends Boss{
     }
 
     get runSpeed(){
-        if(this.isBot) return 4;
-        return 9;
+        if(this.isBot) return 2;
+        return 7;
     }
 
     get isBot(){
@@ -133,6 +107,7 @@ class Clocksmith extends Boss{
     }
 
     createBotsCircle(distance, angleChange, numBots, offset = 0, startingVelocity = new Vector(0, 0)){
+        numBots = Math.floor(numBots);
         let startAngle = this.angleToPlayer - angleChange/2 + offset;
 
         for(let i = 0; i < numBots; i++){
@@ -156,7 +131,7 @@ class Clocksmith extends Boss{
             
         }
 
-        time.delayedFunction(this, 'createBotsCircle', this.botCooldown, [30, PI, 3]);
+        time.delayedFunction(this, 'createBotsCircle', this.botCooldown, [30, PI, 2*this.attackPower]);
     }
 
     killBoss(){
@@ -170,7 +145,7 @@ class Clocksmith extends Boss{
         this.teleportAway();
 
         time.stopFunctions(this, 'createBotsCircle')
-        this.createBotsCircle(20, 2*PI, 5);
+        this.createBotsCircle(20, 2*PI, 3*this.attackPower);
     }
 
     teleportAway(){
