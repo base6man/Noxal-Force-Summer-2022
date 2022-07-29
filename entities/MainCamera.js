@@ -156,7 +156,7 @@ class MainCamera{
 
     createShake(magnitude = 1){
         this.shakeVector = new Vector(this.shakeVector.magnitude + magnitude*this.shakeMagnitude, 0);
-        this.shakeVector.angle = random(0, 2*PI);
+        this.updateShake();
     }
 
     get topEdge(){

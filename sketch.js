@@ -1,7 +1,7 @@
 let scene, transition;
 let skipIntro = true;
 
-let attackImage, diagonalAttackImage, stillAttackImage, attackDissapateImage, diagonalDissapateImage;
+let attackImage, diagonalAttackImage, stillAttackImage, attackDissapateImage, diagonalDissapateImage, shieldAttackImage, shieldDiagonalImage;
 let floorImages;
 let playerRunning, playerIdle, playerDiagonal;
 let guardIdle, guardAttack, botImage;
@@ -21,7 +21,7 @@ let collisionSteps = 5;
 
 let pixelSize = 5;
 
-let difficulty = 5;
+let difficulty = 3;
 
 let songs;
 let currentSong;
@@ -189,6 +189,12 @@ function preload() {
     loadImage("images/attackImages/attackDissapate(0).png"),
     loadImage("images/attackImages/attackDissapate(1).png")
   ]
+  shieldAttackImage = [
+    loadImage("images/attackImages/shieldAttack.png")
+  ]
+  shieldDiagonalImage = [
+    loadImage("images/attackImages/shieldDiagonal.png")
+  ]
 
   guardIdle = [
     loadImage("images/bossImages/guardIdle(0).png")
@@ -229,7 +235,7 @@ function setup(){
   allImages = [
     playerRunning, playerIdle, playerDiagonal, 
     floorImage, 
-    attackImage, diagonalAttackImage, stillAttackImage, attackDissapateImage, 
+    attackImage, diagonalAttackImage, stillAttackImage, attackDissapateImage, shieldAttackImage, shieldDiagonalImage,
     guardIdle, guardAttack, 
     clocksmithImage, clocksmithSwitch, clocksmithReverseSwitch,
     botImage
@@ -244,7 +250,9 @@ function setup(){
     normal: attackImage,
     diagonal: diagonalAttackImage,
     still: stillAttackImage,
-    dissapate: attackDissapateImage
+    dissapate: attackDissapateImage,
+    shield: shieldAttackImage,
+    shieldDiagonal: shieldDiagonalImage
   }
 
   playerImages = {

@@ -61,6 +61,7 @@ class Ghost extends PhysicsObject{
         this.knockedback = false;
     }
 
+    /*
     onTriggerCollision(other){
         if (other.collider.layer == 'blueBullet'){
 
@@ -72,8 +73,14 @@ class Ghost extends PhysicsObject{
             time.delayedFunction(this, 'endKnockback', this.knockbackTime);
         }
     }
+    */
 
     calculateSpeed(x){
         return (240 / (1 + Math.exp(20*x))) + 45;
     }
+
+    // Only for people trying to track the ghost as if it were the player
+    // Do not use these variables
+    get speedMult(){ return 1; }
+    get runSpeed(){ return 150;}
 }

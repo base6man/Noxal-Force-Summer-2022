@@ -1,3 +1,5 @@
+// Unused
+
 class Wizard extends Boss{
     constructor(arenaCenter, arenaSize, difficulty){
         super(arenaCenter, arenaSize);

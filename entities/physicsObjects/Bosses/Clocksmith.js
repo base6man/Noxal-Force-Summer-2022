@@ -57,7 +57,7 @@ class Clocksmith extends Boss{
         ]));
 
         this.attackManager.addComboList(comboList);
-        this.attackManager.waitForSeconds(1/this.agressiveness);
+        this.attackManager.waitForSeconds(3/this.agressiveness);
     }
     
     createAnimations(){

@@ -7,8 +7,10 @@ class Bullet extends PhysicsObject{
         this.homing = 0;
         this.target = scene.player;
 
+        this.colliderRadiusTheyGaveMe = colliderRadius;
+
         this.melee = false;
-        if(colliderRadius == 0) colliderRadius = this.image.height/2 - 2;
+        this.isShield = false;
 
         this.collider = new CircleCollider(this, 0, 0, colliderRadius);
         this.collider.layer = 'enemyAttack';
@@ -38,6 +40,26 @@ class Bullet extends PhysicsObject{
         
         let listOfAnimations = [];
 
+        let shieldAnimation = {
+            parent: this,
+            name: 'shield',
+            animation: new Animator('shield', attackImages.shield, 0.3),
+            get canRun(){
+                return !this.parent.diagonal && this.parent.isShield;
+            }
+        }
+        listOfAnimations.push(shieldAnimation);
+
+        let diagonalShieldAnimation = {
+            parent: this,
+            name: 'diagonalShield',
+            animation: new Animator('diagonalShield', attackImages.shieldDiagonal, 0.3),
+            get canRun(){
+                return this.parent.diagonal && this.parent.isShield;
+            }
+        }
+        listOfAnimations.push(diagonalShieldAnimation);
+
         let dissapateAnimation = {
             parent: this,
             name: 'dissapate',
@@ -47,17 +69,6 @@ class Bullet extends PhysicsObject{
             }
         }
         listOfAnimations.push(dissapateAnimation);
-        
-
-        let generateAnimation = {
-            parent: this,
-            name: 'generate',
-            animation: new Animator('generate', attackImages.generate, 0.1),
-            get canRun(){
-                return this.parent.timeSinceBirth < 0.05;
-            }
-        }
-        //listOfAnimations.push(generateAnimation);
 
         let stillAnimation = {
             parent: this,
@@ -72,7 +83,7 @@ class Bullet extends PhysicsObject{
         let normalAnimation = {
             parent: this,
             name: 'normal',
-            animation: new Animator('meleeAttack', attackImages.normal, 0.3),
+            animation: new Animator('attack', attackImages.normal, 0.3),
             get canRun(){
                 return !this.parent.diagonal;
             }
@@ -82,7 +93,7 @@ class Bullet extends PhysicsObject{
         let diagonalAnimation = {
             parent: this,
             name: 'diagonal',
-            animation: new Animator('diagonalMeleeAttack', attackImages.diagonal, 0.3),
+            animation: new Animator('diagonal', attackImages.diagonal, 0.3),
             get canRun(){
                 return this.parent.diagonal;
             }
@@ -98,7 +109,8 @@ class Bullet extends PhysicsObject{
 
     makeBlueBullet(){
         this.collider.layer = 'blueBullet';
-        this.image = bulletImage[3];
+        this.collider.radius = this.colliderRadiusTheyGaveMe + 2;
+        this.isShield = true;
         this.melee = true;
     }
 
@@ -204,3 +216,32 @@ class Bullet extends PhysicsObject{
         this.index--;
     }
 } 
+
+class BounceBullet extends Bullet{
+    constructor(colliderRadius, startingPosition, startingVelocity, canWhoosh){
+        super(colliderRadius, startingPosition, startingVelocity, canWhoosh);
+
+        let colliderLength = colliderRadius * 2;
+        this.otherCollider = new BoxCollider(this, 0, 0, colliderLength, colliderLength);
+        this.otherCollider.layer = 'boss';
+
+        this.melee = true;
+
+        this.maxBounces = 2;
+        this.numBounces = 0;
+        this.bounceAcceleration = 1;
+    }
+
+    onColliderCollision(other){
+        if(other.collider.layer == 'wall'){
+
+            let vectorToPlayer = this.target.position.subtract(this.position);
+            this.velocity.angle = vectorToPlayer.angle;
+            this.velocity.magnitude *= this.bounceAcceleration;
+
+            this.numBounces++;
+            if(this.numBounces > this.maxBounces)
+                this.dissapate();
+        }
+    }
+}

@@ -21,4 +21,11 @@ class PhysicsObject{
     get diagonal(){
         return this.velocity.diagonal;
     }
+
+    onColliderCollision(other){
+        // Do nothing!
+    }
+    onTriggerCollision(other){
+        // Do nothing!
+    }
 }

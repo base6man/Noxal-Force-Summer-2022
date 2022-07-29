@@ -204,6 +204,19 @@ class Boss extends PhysicsObject{
         this.attackAnimation = false;
     }
 
+    get ghost(){
+        return this.target.ghost;
+    }
+
+    get tooCloseToGhost(){
+        if(!this.ghost) return false;
+        return this.ghost.position.subtract(this.position).magnitude < this.distanceToDodge;
+    }
+
+    get tooCloseToPlayer(){
+        return this.distanceToPlayer < this.distanceToDodge && this.distanceToPlayer > this.minimumDistanceToDodge;
+    }
+
     get direction(){
         return this.vectorToPlayer.direction;
     }

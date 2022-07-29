@@ -291,7 +291,7 @@ class Player extends PhysicsObject{
             scene.mainCamera.createShake();
 
             let knockbackVector = this.position.subtract(other.position);
-            knockbackVector.magnitude = this.knockbackSpeed * this.speedMult / 4;
+            knockbackVector.magnitude = this.knockbackSpeed * this.speedMult * 2/3;
             this.velocity = knockbackVector;
             
             this.knockedback = true;

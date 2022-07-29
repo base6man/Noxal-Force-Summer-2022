@@ -101,10 +101,8 @@ class BoxCollider extends Collider{
             firstCollider.parent.position = p1.add(out1);
             secondCollider.parent.position = p2.add(out2);
 
-            try{ firstCollider.parent.onColliderCollision(secondCollider.parent); }
-            catch{ }
-            try{ secondCollider.parent.onColliderCollision(firstCollider.parent); } 
-            catch{ } // These are just if thens, but I don't know how to check if an object has a function
+            firstCollider.parent.onColliderCollision(secondCollider.parent);
+            secondCollider.parent.onColliderCollision(firstCollider.parent);
             
         }
     }
