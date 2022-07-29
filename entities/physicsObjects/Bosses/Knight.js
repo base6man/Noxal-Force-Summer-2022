@@ -3,7 +3,7 @@ class Knight extends Boss{
         super(arenaCenter, arenaSize);
 
         this.runSpeed = 3;
-        this.dashAttackSpeed = 20;
+        this.dashAttackSpeed = 18;
 
         this.difficulty =     difficulty;
         this.agressiveness =  this.difficulty;
@@ -12,7 +12,7 @@ class Knight extends Boss{
         this.localSpeedMult = 1 + (this.difficulty-1)/6;
         this.dodgePower =     1 + (this.difficulty-1)/3;
         
-        this.normalMinDistance = 70;
+        this.normalMinDistance = 80;
         this.normalMaxDistance = 100;
         this.minDistance = this.normalMinDistance;
         this.maxDistance = this.normalMaxDistance;
@@ -21,121 +21,46 @@ class Knight extends Boss{
         this.normalFriction = 14;
         this.friction = this.normalFriction;
 
-        this.distanceToShield = 70 * (this.dodgePower + 4)/5;
-        this.distanceToDodge = 40 * (this.dodgePower + 4)/5;
+        this.minimumDistanceToDodge = 40 * (this.dodgePower + 4)/5;
+        this.distanceToDodge = 70 * (this.dodgePower + 4)/5;
         this.dodgeDist = 40 * (this.dodgePower + 4)/5;
         this.dodgeTime = 0.2;
         
         this.health = 3;
-
-        this.shieldPosition = -PI;
-        this.timeForShieldToMakeFullCircle = 0.5;
-        this.shieldOffset = 0;
         
         this.knockbackSpeed = 60;
         this.knockbackTime = 0.2;
 
         this.normalLookAheadTime = 1;
         this.lookAheadTime = this.normalLookAheadTime;
-
-        this.restrictedAttacks = [];
-
-        this.comboList = 
-        [
-            [
-                {firstAttack: 'any', nextAttack: 'dodge', agression: 0.25}
-            ],
-            [
-                {firstAttack: 'any', nextAttack: 'circleShield', windup: 0.1, agression: 0.5}
-
-            ],
-            [
-                {firstAttack: 'idle', nextAttack: 'dashAttack', windup: 0.8},
-            ]
-        ];
     }
-    
-    createAnimations(){
-        let listOfAnimations = [];
 
-
-        let attackAnimation = {
-            parent: this, 
-            name: 'attack',
-            animation: new Animator('attack', bossImages.attack, 0.3),
-            get canRun(){
-                return this.parent.isAttacking && this.parent.previousAttacks[this.parent.previousAttacks.length - 1] != 'dodge';
-            }
-        }
-        listOfAnimations.push(attackAnimation);
-
+    createAttackManager(){
         
-        let idleAnimation = {
-            parent: this,
-            name: 'idle',
-            animation: new Animator('idle', bossImages.idle, 0.8),
-            get canRun(){
-                return !this.parent.isAttacking;
-            }
-        }
-        listOfAnimations.push(idleAnimation);
+        this.attackManager = new AttackManager(this);
+        let comboList = []
 
-        this.animationManager = new AnimationManager(listOfAnimations);
-    }
+        comboList.push(new Combo('dodge',
+        [
+            [new Dodge(this, 0.2)]
+        ]));
 
-    update(){
-        super.update();
-        this.updateShieldBullet();
-    }
+        comboList.push(new Combo('shield',
+        [
+            [new Shield(this)]
+        ]));
 
-    get idealShieldPosition(){
-        return this.angleToPlayer + this.shieldOffset;
-    }
+        comboList.push(new Combo('shieldSpread',
+        [
+            [new ShieldSpread(this, 0.8)]
+        ]));
 
-    offsetShield(timeOfOffset){
-        this.shieldOffset = PI;
-        time.delayedFunction(this, 'endShieldOffset', timeOfOffset);
-    }
+        comboList.push(new Combo('dashAttack',
+        [
+            [new ShortDashAttack(this, 0.15)]
+        ]));
 
-    endShieldOffset(){
-        this.shieldOffset = 0;
-    }
-
-    updateShieldBullet(){
-        let moveSpeed = 2*PI * time.deltaTime / this.timeForShieldToMakeFullCircle;
-
-        let lowerValue = this.idealShieldPosition;
-
-        // Go up, then down, so it winds up lower
-        while(lowerValue < this.shieldPosition) lowerValue += 2*PI;
-        while(lowerValue > this.shieldPosition) lowerValue -= 2*PI;
-
-        if(Math.abs(this.shieldPosition - this.angleToPlayer) < moveSpeed || Math.abs(this.shieldPosition + 2*PI - this.angleToPlayer) < moveSpeed) {
-            this.shieldPosition = this.idealShieldPosition; 
-        }
-        else if(this.shieldPosition - lowerValue < PI) {
-            this.shieldPosition -= moveSpeed;
-        }
-        else{ 
-            this.shieldPosition += moveSpeed;
-        }
-
-        this.shieldPosition = this.shieldPosition % (2*PI);
-
-        let offset = new Vector(10, 0);
-        offset.angle = this.shieldPosition;
-
-        let myBullet = new Bullet(bulletImage[0], this.position.add(offset));
-        myBullet.timeAlive = 0;
-        myBullet.makeBlueBullet();
-    }
-
-    updateImage(){
-        super.updateImage();
-    }
-
-    dashAttack(){
-        super.dashAttack();
-        this.offsetShield(this.distanceToPlayer / this.speed);
+        this.attackManager.addComboList(comboList);
+        this.attackManager.waitForSeconds(1/this.agressiveness);
     }
 }

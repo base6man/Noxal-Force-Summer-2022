@@ -277,6 +277,11 @@ class Boss extends PhysicsObject{
         return this.attackManager.isAttacking;
     }
 
+    get shieldIsOffset(){
+        if(!this.attackManager.currentAttack) return false;
+        return this.attackManager.currentAttack.melee;
+    }
+
     get isDodging(){
         if(!this.attackManager || !this.attackManager.currentAttack) return false;
         return this.attackManager.currentAttack.isDodge;

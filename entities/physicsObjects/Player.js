@@ -291,11 +291,11 @@ class Player extends PhysicsObject{
             scene.mainCamera.createShake();
 
             let knockbackVector = this.position.subtract(other.position);
-            knockbackVector.magnitude = this.knockbackSpeed * this.speedMult * 2/3;
+            knockbackVector.magnitude = this.knockbackSpeed * this.speedMult * 1/3;
             this.velocity = knockbackVector;
             
             this.knockedback = true;
-            time.delayedFunction(this, 'endKnockback', this.knockbackTime);
+            this.endKnockback();    // delay of zero
         }
     }
 }
