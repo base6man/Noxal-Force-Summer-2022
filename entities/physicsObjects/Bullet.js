@@ -221,7 +221,7 @@ class BounceBullet extends Bullet{
     constructor(colliderRadius, startingPosition, startingVelocity, canWhoosh){
         super(colliderRadius, startingPosition, startingVelocity, canWhoosh);
 
-        let colliderLength = colliderRadius * 2;
+        let colliderLength = (colliderRadius - 2) * 2;
         this.otherCollider = new BoxCollider(this, 0, 0, colliderLength, colliderLength);
         this.otherCollider.layer = 'boss';
 

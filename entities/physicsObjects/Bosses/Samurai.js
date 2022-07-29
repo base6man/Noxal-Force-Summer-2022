@@ -2,15 +2,15 @@ class Samurai extends Boss{
     constructor(arenaCenter, arenaSize, difficulty){
         super(arenaCenter, arenaSize);
 
-        this.runSpeed = 7;
+        this.runSpeed = 9;
         this.dashAttackSpeed = 25;
         this.sidestepSpeed = 30;
 
         this.difficulty =     difficulty;
-        this.agressiveness =  this.difficulty;
+        this.agressiveness =  1 + (this.difficulty-1)/2;
         this.attackPower =    1 + (this.difficulty-1)/3;
-        this.shootSpeed =     this.runSpeed * (this.difficulty-1)/5;
-        this.localSpeedMult = 1 + (this.difficulty-1)/5;
+        this.shootSpeed =     0;
+        this.localSpeedMult = 1 + (this.difficulty-1)/7;
         this.dodgePower =     1 + (this.difficulty-1)/4;
 
         this.normalMinDistance = 50;
@@ -22,11 +22,11 @@ class Samurai extends Boss{
         this.normalFriction = 3;
         this.friction = this.normalFriction;
         
-        this.minimumDistanceToDodge = 50 * (this.dodgePower + 4)/5;
+        this.minimumDistanceToDodge = 60 * (this.dodgePower + 4)/5;
         this.distanceToDodge = 80 * (this.dodgePower + 4)/5;
 
         this.dodgeDist = 70 * (this.dodgePower + 4)/5;
-        this.dodgeTime = 0.25;
+        this.dodgeTime = 0.4;
         
         this.health = 3;
         
@@ -41,33 +41,44 @@ class Samurai extends Boss{
         this.attackManager = new AttackManager(this);
         let comboList = []
 
+        comboList.push(new Combo('dodge',
+        [
+            [new SideDodge(this, 0.2)]
+        ]));
+
         comboList.push(new Combo('bluePistol',
         [
-            [new BluePistol(this, 0.4, 0)]
+            [new BluePistol(this, 0.4, 0), new SamuraiDashAttack(this, 1.2, 0, 'dashAttack'), new Rapid(this, 0.4)]
         ]));
 
         comboList.push(new Combo('dashAttack',
         [
-            [new SamuraiDashAttack(this, 0.5, 0)]
+            [new SamuraiDashAttack(this, 0.5, 0), new ShortLaser(this, 1.0)]
         ]));
+
+        comboList.push(new Combo('laser',
+        [
+            [new ShortLaser(this, 0.6)]
+        ]))
 
         comboList.push(new Combo('homing',
         [
-            [new Homing(this, 1.2, 0)]
+            [new Homing(this, 0.6, 0), new Rapid(this, 1.2)]
         ]));
 
         comboList.push(new Combo('bounceShot',
         [
-            [new BouncePistol(this, 1.2)]
+            [new BouncePistol(this, 1.2)],
+            [new Laser(this, 0.4)]
         ]));
 
-        let shieldSpread = new Combo('shieldSpread',
+        let spread = new Combo('shieldSpread',
         [
             [new ShieldSpread(this, 0.5)],
-            [new BouncePistol(this, 0.6), new SamuraiDashAttack(this, 0.2, 1), new FreeWave(this, 1.8)]
+            [new BouncePistol(this, 0.6), new SamuraiDashAttack(this, 0.2, 1), new SideDodge(this), new FreeWave(this, 1.8)]
         ]);
-        comboList.push(shieldSpread);
-        this.attackManager.firstCombo = shieldSpread;
+        comboList.push(spread);
+        this.attackManager.firstCombo = spread;
 
         this.attackManager.addComboList(comboList);
         this.attackManager.waitForSeconds(3/this.agressiveness);
