@@ -11,7 +11,7 @@ class Samurai extends Boss{
         this.attackPower =    1 + (this.difficulty-1)/3;
         this.shootSpeed =     0;
         this.localSpeedMult = 1 + (this.difficulty-1)/7;
-        this.dodgePower =     1 + (this.difficulty-1)/4;
+        this.dodgePower =     1 + (this.difficulty-1)/8;
 
         this.normalMinDistance = 50;
         this.normalMaxDistance = 120;
