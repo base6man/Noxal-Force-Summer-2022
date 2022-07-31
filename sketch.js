@@ -152,6 +152,10 @@ function isRealNumber(num){
   return typeof num == 'number' && (num < 0 || num >= 0) && (num != Infinity || num != -Infinity);
 }
 
+function randRange(min, max){
+  return Math.random() * (max - min + 1) + min;
+}
+
 const varToString = varObj => Object.keys(varObj)[0];
 
 // Preload initializes images and their relavant canvases

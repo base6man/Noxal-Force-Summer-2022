@@ -360,15 +360,12 @@ class Boss extends PhysicsObject{
 
         scene.referenceBosses.splice(scene.referenceBosses.indexOf(this), 1);
 
-        if(!this.isMainBoss && !hasKilledMainBoss){
+        if(!this.isMainBoss && !hasKilledMainBoss)
             this.parent.killChildBoss(this.index);
-        }
-        else if (this.isMainBoss){
-            for(let i = scene.bullets.length-1; i >= 0; i--) {
-                if(!scene.bullets[i].isPlayerAttack) scene.bullets[i].dissapate();
-            }
+        
+        else if (this.isMainBoss)
             for(let i of this.myBots) i.killBoss(true);
-        }
+        
     }
 
     killChildBoss(index){

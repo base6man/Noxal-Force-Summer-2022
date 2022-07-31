@@ -25,7 +25,7 @@ class Player extends PhysicsObject{
         this.dashCooldownTime = 0.5;
 
         this.phaseThrough = false;
-        this.teleportIFrames = 0.1;
+        this.teleportIFrames = 0.2;
         this.dashIFrames = 0.2;
 
         this.canAttack = true;
