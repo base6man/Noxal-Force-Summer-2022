@@ -1,11 +1,14 @@
 let scene, transition;
-let skipIntro = true;
+
+let skipIntro = false, introSpeed = 1, canPlayIntro = false;
+let transitionFont;
 
 let attackImage, diagonalAttackImage, stillAttackImage, attackDissapateImage, diagonalDissapateImage, shieldAttackImage, shieldDiagonalImage;
 let floorImages;
 let playerRunning, playerIdle, playerDiagonal;
 let guardIdle, guardAttack, botImage;
 let clocksmithImage, clocksmithSwitch, clocksmithReverseSwitch;
+let castleImages;
 let allImages;
 
 let bossImages = {}
@@ -25,7 +28,7 @@ let difficulty = 2;
 
 let songs;
 let currentSong;
-let songVolume = 0.0; // 0.8
+let songVolume = 0.8; // 0.8
 
 let whoosh;
 
@@ -222,7 +225,18 @@ function preload() {
     loadImage("images/bossImages/bot(0).png")
   ]
 
+  castleImages = [
+    loadImage("images/walls.png"),
+    loadImage("images/garden.png"),
+    loadImage("images/diningHall.png"),
+    loadImage("images/vault.png"),
+    loadImage("images/castle.png")
+  ]
+
+  transitionFont = loadFont("images/fonts/transitionFont.ttf");
+
   songs = [
+    { name: 'intro',      song: loadSound("sounds/intro.wav")},
     { name: 'guard',      song: loadSound("sounds/onTheTrain.wav") },
     { name: 'soldier',    song: loadSound("sounds/factoryTheme.wav") },
     { name: 'clocksmith', song: loadSound("sounds/bellsAndWhistles.wav") }
@@ -234,7 +248,8 @@ function preload() {
 
 function setup(){
   time = new Time();
-  createCanvas(windowWidth, windowHeight - 4);
+  createCanvas(windowWidth, windowHeight-4);
+  console.log(width / pixelSize, height / pixelSize);
 
   allImages = [
     playerRunning, playerIdle, playerDiagonal, 
@@ -271,6 +286,8 @@ function setup(){
     bot: botImage
   }
 
+  //for(let i of castleImages) i.pixelSize = 10;
+
   clocksmithImages = {
     
     normal: clocksmithImage,
@@ -283,17 +300,20 @@ function setup(){
   }
   else{
     transition = new Transition([
-      'Welcome to Noxal Force!', 
-      'This is a game about escaping a castle.', 
-      'Once the thriving center of a great kingdom, \nMortimor Keep has fallen to ruin.', 
-      'The Tower Gardens are long collapsed, \nnow crawling with spikeroot.',
-      'Our once famous dining hall may still exist, \nbut nobody has seen it in years.',
-      'The secret vault still stands, \nbut its treasure is rumored to be gone.',
-      'Indeed, the Seven Walls have nothing left to protect.',
-      'So go.',
-      'Escape.',
-      'There is nothing for you here.'
+      new Quote('Welcome to Noxal Force!', 3.2, castleImages[0], new Vector(0, -1300), new Vector(0, 120)),
+      new Quote('This is a game about escaping a castle.', 3.2, castleImages[0], new Vector(0, -916), new Vector(0, 120)), 
+      new Quote('Once the thriving center of a great kingdom, \nMortimor Keep has fallen to ruin.', 6.4, castleImages[0], new Vector(0, -532), new Vector(0, 120)), 
+      new Quote('The Tower Gardens are long collapsed, \nnow crawling with spikeroot.', 6.4, castleImages[1], new Vector(0, 150), new Vector(0, -50)),
+      new Quote('Our once famous dining hall may still exist, \nbut nobody has seen it in years.', 6.4, castleImages[2], new Vector(100, 100), new Vector(-30, -30)),
+      new Quote('The secret vault still stands, \nbut its treasure is rumored to be gone.', 6.4, castleImages[3], new Vector(0, 50), new Vector(0, -15)),
+      new Quote('Indeed, the Seven Walls have nothing left to protect.', 6.4, castleImages[4]),
+      new Quote('So go.', 1.6),
+      new Quote('Go now.', 1.6),
+      new Quote('Escape.', 3.2),
+      new Quote('There is nothing for you here.', 3.2)
     ]);
+
+    playSong(songs[0].song);
   }
 
   getAudioContext().suspend();
@@ -314,11 +334,18 @@ function updateSong(){
     }
   }
 
-  if(!currentSong.isPlaying()){
+  playSong(currentSong, oldSong);
+}
+
+function playSong(song, oldSong){
+  if(!song.isPlaying()){
     if(oldSong) oldSong.stop();
-    currentSong.loop();
-    currentSong.setVolume(songVolume);
+    song.loop();
+    song.setVolume(songVolume);
   }
+
+  currentSong = song;
+  time.previousFrameSongRunTime = 0;
 }
 
 function killScene(newTransition = new Transition([])){
@@ -364,9 +391,8 @@ function draw(){
       scene.checkForGameOver();
     }
     else{
-      for(let stepNum = 0; stepNum < steps; stepNum++) 
-        time.update();
-      if(transition) transition.update();
+      time.update();
+      if(transition && canPlayIntro) transition.update();
     }
   
     let endTime = new Date();
@@ -437,4 +463,6 @@ function drawImage(x, y, img, rotation = 'right', name = null){
 
 function keyPressed(){
   userStartAudio();
+  canPlayIntro = true;
+  time.startSongTime = time.runTime;
 }

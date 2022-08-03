@@ -116,12 +116,12 @@ class Scene{
         if(this.gameOver){
             let winlose = new Transition([]);
             if(this.player.health <= 0){
-                winlose.addQuote('You lose.');
+                winlose.addQuote(new Quote('You lose.'));
             }
             else{
                 difficulty++;
-                winlose.addQuote('You win!');
-                winlose.addQuote('Difficulty increased to ' + difficulty);
+                winlose.addQuote(new Quote('You win!'));
+                winlose.addQuote(new Quote('Difficulty increased to ' + difficulty));
             }
             killScene(winlose);
         }

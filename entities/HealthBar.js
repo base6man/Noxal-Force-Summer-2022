@@ -25,9 +25,17 @@ class HealthBar{
 
         this.healthCanvas = new Canvas(null, this.totalWidth, this.totalHeight);
         this.previousHealthCanvas = new Canvas(null, this.totalWidth, this.totalHeight);
+
+        this.isFirstFrame = true;
     }
 
     updateImage(){
+        if(this.isFirstFrame){
+            this.healthCanvas.setup();
+            this.previousHealthCanvas.setup();
+            this.isFirstFrame = false;
+        }
+
         if(this.shouldDisplay) {
             if(this.displayingPreviousValue) this.healthCanvas.draw(this.position.x, this.position.y);
             else{ this.previousHealthCanvas.draw(this.position.x, this.position.y); }

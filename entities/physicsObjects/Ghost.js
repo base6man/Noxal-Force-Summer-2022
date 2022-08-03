@@ -76,7 +76,9 @@ class Ghost extends PhysicsObject{
     */
 
     calculateSpeed(x){
-        return (240 / (1 + Math.exp(20*x))) + 45;
+        let speedMult = 1;
+        if(keyIsDown(SHIFT)) speedMult = 0.5;
+        return speedMult * (240 / (1 + Math.exp(20*x))) + 45;
     }
 
     // Only for people trying to track the ghost as if it were the player

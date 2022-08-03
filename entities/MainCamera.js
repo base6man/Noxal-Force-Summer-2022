@@ -12,7 +12,6 @@ class MainCamera{
         this.position = this.averageTargetPosition;
         this.width = width/pixelSize;
         this.height = height/pixelSize;
-
         this.offset;
         this.offsetMagnitude = 60;
         
@@ -21,6 +20,9 @@ class MainCamera{
 
         this.isFrozen = false;
         this.freezeTarget;
+
+        this.playerPositionLastFrame = this.player.position;
+        this.effectivePlayerVelocity;
 
         this.name = 'mainCamera';
 
@@ -31,14 +33,17 @@ class MainCamera{
     }
 
     update(){
-        this.freezeTarget = null;
+        this.effectivePlayerVelocity = this.player.velocity;
 
+        this.freezeTarget = null;
         if(this.isFrozen) return;
 
         this.position = this.position.lerp(this.targetPos, this.speed * time.deltaTime);
         this.position = this.position.add(this.shakeVector);
 
         this.keepPlayerOnScreen();
+
+        this.playerPositionLastFrame = this.player.position;
     }
 
     keepPlayerOnScreen(){
@@ -95,9 +100,7 @@ class MainCamera{
     }
 
     get speed(){
-        let _speed;
-        if(this.player.position.subtract(this.position).magnitude > 75) _speed = 5;
-        _speed = 2;
+        let _speed = 2;
 
         return _speed * this.speedMult;
     }
