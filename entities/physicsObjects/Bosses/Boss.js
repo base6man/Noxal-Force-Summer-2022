@@ -3,7 +3,7 @@ class Boss extends PhysicsObject{
      * @param {Vector} arenaCenter Starting position, also center of arena. Can change starting position later by editing position
      * @param {Vector} arenaSize Size of the arena, in a vector
      */
-     constructor(arenaCenter, arenaSize){
+     constructor(arenaCenter = new Vector(0, 0), arenaSize = new Vector(400, 240), difficulty){
         
         super(arenaCenter);
         this.collider = new BoxCollider(this, 0, 0, 7, 7);
@@ -12,6 +12,16 @@ class Boss extends PhysicsObject{
 
         this.speedMult = 8;
         this.clockwise = true;
+
+        this.difficultyMultiplier = 1;
+        
+        this.agressiveness =     1;
+        this.attackPower =       1;
+        this.shootSpeed =        0;
+        this.localSpeedMult =    1;
+        this.dodgePower =        1;
+        this.maxComboCounter =   4;
+
         
         this.minimumDistanceToShield = 0;
         this.distanceToShield;
@@ -27,7 +37,7 @@ class Boss extends PhysicsObject{
 
         this.knockbackSpeed;
         this.knockbackTime;
-        this.knockedback = false;
+        this.knockedBack = false;
 
         this.arenaRight = arenaCenter.x + arenaSize.x/2;
         this.arenaTop = arenaCenter.y + arenaSize.y/2;
@@ -47,7 +57,6 @@ class Boss extends PhysicsObject{
         this.myBots = [];
         this.isMainBoss = true;
         scene.referenceBosses.push(this);
-        this.focusCameraOnThis = true;
 
         this.isAllowedToSwitch = true;
         this.timeBetweenSwitching = 0.1;
@@ -60,6 +69,14 @@ class Boss extends PhysicsObject{
         this.createAnimations();
 
         this.isFirstFrame = true;
+    }
+
+    get difficulty(){
+        return difficulty * this.difficultyMultiplier;
+    }
+
+    setDifficulty(){
+        // Do nothing!
     }
 
     createAttackManager(){
@@ -98,6 +115,9 @@ class Boss extends PhysicsObject{
     update(){
 
         if(this.isFirstFrame){
+
+            this.setDifficulty();
+            
             this.createAttackManager();
             this.attackManager.balanceAttacks();
             this.healthBar = new HealthBar(this, this.health);
@@ -106,7 +126,7 @@ class Boss extends PhysicsObject{
             this.endInvincibility();
         }
 
-        if(!this.knockedback) this.velocity = this.updateVelocity(); 
+        if(!this.knockedBack) this.velocity = this.updateVelocity(); 
         this.attackManager.update();
         super.update();
         
@@ -126,7 +146,7 @@ class Boss extends PhysicsObject{
         if(this.isTouchingWall){
             movementVector = this.position.subtract(this.arenaCenter).multiply(-1);
         }
-        if(this.distanceToPlayer > this.maxDistance){
+        else if(this.distanceToPlayer > this.maxDistance){
             movementVector = this.vectorToPlayer;
         }
         else if (this.distanceToPlayer > this.minDistance){
@@ -140,6 +160,7 @@ class Boss extends PhysicsObject{
         else{
             movementVector = this.vectorToPlayer.multiply(-1);
         }
+        console.log(movementVector);
         
         movementVector.magnitude = 1;
 
@@ -154,7 +175,8 @@ class Boss extends PhysicsObject{
         movementVector.magnitude = this.speed;
 
         let newVelocity = this.velocity.addWithFriction(movementVector, frictionEffect);
-        console.assert(newVelocity.isVector(), movementVector, frictionEffect, tempVector);
+        console.assert(newVelocity.isVector(), tempVector, frictionEffect, this.speed);
+
         return newVelocity;
     }
 
@@ -268,6 +290,7 @@ class Boss extends PhysicsObject{
     }
 
     set trueSpeed(_speed){
+        console.assert(isNumber(_speed));
         this.maxSpeed = _speed;
         this.velocity.magnitude = this.speed;
     }
@@ -292,7 +315,7 @@ class Boss extends PhysicsObject{
     }
 
     endKnockback(){
-        this.knockedback = false;
+        this.knockedBack = false;
         this.velocity.magnitude = this.speed;
     }
 

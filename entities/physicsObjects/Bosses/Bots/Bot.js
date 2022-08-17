@@ -5,8 +5,6 @@ class Bot extends Boss{
         this.health = 1;
         this.isMainBoss = false;
         this.parent;
-
-        this.focusCameraOnThis = false;
     }
 
     setIndex(){

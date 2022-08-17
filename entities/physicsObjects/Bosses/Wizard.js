@@ -1,13 +1,12 @@
 // Unused
 
 class Wizard extends Boss{
-    constructor(arenaCenter, arenaSize, difficulty){
+    constructor(arenaCenter, arenaSize){
         super(arenaCenter, arenaSize);
 
         // runSpeed is in a getter
         this.dashAttackSpeed = 20;
 
-        this.difficulty =     difficulty;
         this.agressiveness =  this.difficulty;
         this.attackPower =    1 + (this.difficulty-1)/3;
         this.shootSpeed =     this.runSpeed * (this.difficulty-1)/5;

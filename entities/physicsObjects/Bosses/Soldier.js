@@ -1,17 +1,11 @@
 class Soldier extends Boss{
-    constructor(arenaCenter, arenaSize, difficulty){
+    constructor(arenaCenter, arenaSize){
         super(arenaCenter, arenaSize);
 
         this.runSpeed = 2;
         this.dashAttackSpeed = 25;
         this.sidestepSpeed = 15;
 
-        this.difficulty =     difficulty;
-        this.agressiveness =  this.difficulty;
-        this.attackPower =    1 + (this.difficulty-1)/3;
-        this.shootSpeed =     this.runSpeed * (this.difficulty-1)/5;
-        this.localSpeedMult = 1 + (this.difficulty-1)/6;
-        this.dodgePower =     1 + (this.difficulty-1)/3;
 
         this.normalMinDistance = 0;
         this.normalMaxDistance = 100;
@@ -35,6 +29,15 @@ class Soldier extends Boss{
         
         this.normalLookAheadTime = 0.4;
         this.lookAheadTime = this.normalLookAheadTime;
+    }
+
+    setDifficulty(){
+        super.setDifficulty();
+        this.agressiveness =  this.difficulty;
+        this.attackPower =    1 + (this.difficulty-1)/3;
+        this.shootSpeed =     this.runSpeed * (this.difficulty-1)/5;
+        this.localSpeedMult = 1 + (this.difficulty-1)/6;
+        this.dodgePower =     1 + (this.difficulty-1)/3;
     }
 
     createAttackManager(){

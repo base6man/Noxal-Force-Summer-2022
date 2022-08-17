@@ -1,16 +1,10 @@
 class Knight extends Boss{
-    constructor(arenaCenter, arenaSize, difficulty){
+    constructor(arenaCenter, arenaSize){
         super(arenaCenter, arenaSize);
 
         this.runSpeed = 3;
         this.dashAttackSpeed = 18;
 
-        this.difficulty =     difficulty;
-        this.agressiveness =  1 + (this.difficulty-1)*2/3;
-        this.attackPower =    1 + (this.difficulty-1)/4;
-        this.shootSpeed =     this.runSpeed * (this.difficulty-1)/8;
-        this.localSpeedMult = 1 + (this.difficulty-1)/4;
-        this.dodgePower =     1 + (this.difficulty-1)/3;
         
         this.normalMinDistance = 100;
         this.normalMaxDistance = 200;
@@ -35,6 +29,15 @@ class Knight extends Boss{
         this.lookAheadTime = this.normalLookAheadTime;
         
         this.createWalls();
+    }
+
+    setDifficulty(){
+        super.setDifficulty();
+        this.agressiveness =  1 + (this.difficulty-1)*2/3;
+        this.attackPower =    1 + (this.difficulty-1)/4;
+        this.shootSpeed =     this.runSpeed * (this.difficulty-1)/8;
+        this.localSpeedMult = 1 + (this.difficulty-1)/4;
+        this.dodgePower =     1 + (this.difficulty-1)/3;
     }
 
     createAttackManager(){

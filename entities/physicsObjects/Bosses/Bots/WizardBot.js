@@ -1,12 +1,11 @@
 class WizardBot extends Bot{
     
-    constructor(arenaCenter, arenaSize, difficulty){
+    constructor(arenaCenter, arenaSize){
         super(arenaCenter, arenaSize);
 
         this.runSpeed = 4;
         this.dashAttackSpeed = 8;
 
-        this.difficulty =     difficulty;
         this.agressiveness =  this.difficulty;
         this.attackPower =    1 + (this.difficulty-1)/3;
         this.shootSpeed =     this.runSpeed * (this.difficulty-1)/5;

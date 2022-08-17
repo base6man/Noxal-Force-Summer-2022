@@ -115,7 +115,7 @@ class MainCamera{
         targetList.push(this.player.position);
 
         for(let i of scene.referenceBosses){
-            if(i.focusCameraOnThis) targetList.push(i.position);
+            if(i.isMainBoss) targetList.push(i.position);
         }
 
         if(scene.referenceBosses.length > 0)

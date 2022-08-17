@@ -1,6 +1,6 @@
 let scene, transition;
 
-let skipIntro = false, introSpeed = 1, canPlayIntro = false;
+let skipIntro = true, introSpeed = 1, canPlayIntro = false;
 let transitionFont;
 
 let attackImage, diagonalAttackImage, stillAttackImage, attackDissapateImage, diagonalDissapateImage, shieldAttackImage, shieldDiagonalImage;
@@ -24,11 +24,11 @@ let collisionSteps = 5;
 
 let pixelSize = 5;
 
-let difficulty = 2;
+let difficulty = 6;
 
 let songs;
 let currentSong;
-let songVolume = 0.8; // 0.8
+let songVolume = 0.0; // 0.8
 
 let whoosh;
 
@@ -156,7 +156,7 @@ function isRealNumber(num){
 }
 
 function randRange(min, max){
-  return Math.random() * (max - min + 1) + min;
+  return Math.random() * (max - min) + min;
 }
 
 const varToString = varObj => Object.keys(varObj)[0];
@@ -226,16 +226,17 @@ function preload() {
   ]
 
   castleImages = [
-    loadImage("images/walls.png"),
+    loadImage("images/castle.png"),
     loadImage("images/garden.png"),
     loadImage("images/diningHall.png"),
     loadImage("images/vault.png"),
-    loadImage("images/castle.png")
+    loadImage("images/walls.png")
   ]
 
   transitionFont = loadFont("images/fonts/transitionFont.ttf");
 
   songs = [
+    { name: 'default',    song: loadSound("sounds/fieldTheme.wav")},
     { name: 'intro',      song: loadSound("sounds/intro.wav")},
     { name: 'guard',      song: loadSound("sounds/onTheTrain.wav") },
     { name: 'soldier',    song: loadSound("sounds/factoryTheme.wav") },
@@ -328,11 +329,13 @@ function createScene(){
 
 function updateSong(){
   let oldSong = currentSong;
+
   for(let i of songs){
     if(i.name == scene.bossManager.nameOfBoss){
       currentSong = i.song;
     }
   }
+  if(!currentSong) currentSong = songs[0].song;
 
   playSong(currentSong, oldSong);
 }

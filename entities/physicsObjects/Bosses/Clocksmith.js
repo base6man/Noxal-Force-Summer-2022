@@ -1,17 +1,9 @@
 class Clocksmith extends Boss{
-    constructor(arenaCenter, arenaSize, difficulty){
+    constructor(arenaCenter, arenaSize){
         super(arenaCenter, arenaSize);
 
         // runSpeed is in a getter
         this.dashAttackSpeed = 20;
-
-        this.difficulty =     difficulty;
-        this.agressiveness =  1 + (this.difficulty-1)/4;
-        this.attackPower =    1 + (this.difficulty-1)/5;
-        this.shootSpeed =     this.runSpeed;
-        this.localSpeedMult = 1 + (this.difficulty-1)/3;
-        this.dodgePower =     1 + (this.difficulty-1)/8;
-        this.botCooldown =    8 / (1 + (this.difficulty-1)/5);
 
         this.speed = this.runSpeed;
         this.normalFriction = 4;
@@ -39,6 +31,17 @@ class Clocksmith extends Boss{
 
 
         this.createBotsCircle(arenaSize.y/2, 2*PI, 6, PI/6);
+
+    }
+
+    setDifficulty(){
+        super.setDifficulty();
+        this.agressiveness =  1 + (this.difficulty-1)/4;
+        this.attackPower =    1 + (this.difficulty-1)/5;
+        this.shootSpeed =     this.runSpeed;
+        this.localSpeedMult = 1 + (this.difficulty-1)/3;
+        this.dodgePower =     1 + (this.difficulty-1)/8;
+        this.botCooldown =    8 / (1 + (this.difficulty-1)/5);
 
     }
 

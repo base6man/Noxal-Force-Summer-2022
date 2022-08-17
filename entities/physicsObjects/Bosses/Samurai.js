@@ -1,17 +1,11 @@
 class Samurai extends Boss{
-    constructor(arenaCenter, arenaSize, difficulty){
+    constructor(arenaCenter, arenaSize){
         super(arenaCenter, arenaSize);
 
         this.runSpeed = 9;
         this.dashAttackSpeed = 25;
         this.sidestepSpeed = 30;
 
-        this.difficulty =     difficulty;
-        this.agressiveness =  1 + (this.difficulty-1)/2;
-        this.attackPower =    1 + (this.difficulty-1)/3;
-        this.shootSpeed =     0;
-        this.localSpeedMult = 1 + (this.difficulty-1)/7;
-        this.dodgePower =     1 + (this.difficulty-1)/8;
 
         this.normalMinDistance = 50;
         this.normalMaxDistance = 120;
@@ -35,6 +29,15 @@ class Samurai extends Boss{
         
         this.normalLookAheadTime = 0.6;
         this.lookAheadTime = this.normalLookAheadTime;
+    }
+
+    setDifficulty(){
+        super.setDifficulty();
+        this.agressiveness =  1 + (this.difficulty-1)/2;
+        this.attackPower =    1 + (this.difficulty-1)/3;
+        this.shootSpeed =     0;
+        this.localSpeedMult = 1 + (this.difficulty-1)/7;
+        this.dodgePower =     1 + (this.difficulty-1)/8;
     }
 
     createAttackManager(){
