@@ -107,21 +107,27 @@ class Guard extends Boss{
     }
 
     teleportThroughWalls(){
+        let teleported = false;
         if(this.position.x >= this.arenaRight - this.collider.width / 2){
             this.position.x = this.arenaLeft + this.collider.width / 2 + 1;
-            this.clockwise = !this.clockwise;
+            teleported = true;
         }
         if(this.position.y >= this.arenaTop - this.collider.height / 2){
             this.position.y = this.arenaBottom + this.collider.height / 2 + 1;
-            this.clockwise = !this.clockwise;
+            teleported = true;
         }
         if(this.position.x <= this.arenaLeft + this.collider.width / 2){
             this.position.x = this.arenaRight - this.collider.width / 2 - 1;
-            this.clockwise = !this.clockwise;
+            teleported = true;
         }
         if(this.position.y <= this.arenaBottom + this.collider.height / 2){
             this.position.y = this.arenaTop - this.collider.width / 2 - 1;
+            teleported = true;
+        }
+
+        if(teleported){
             this.clockwise = !this.clockwise;
+            this.velocity.magnitude = this.speed;
         }
     }
 }

@@ -24,11 +24,11 @@ let collisionSteps = 5;
 
 let pixelSize = 5;
 
-let difficulty = 6;
+let difficulty = 8;
 
 let songs;
 let currentSong;
-let songVolume = 0.0; // 0.8
+let songVolume = 0.8; // 0.8
 
 let whoosh;
 
